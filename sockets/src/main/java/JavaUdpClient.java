@@ -9,6 +9,7 @@ public class JavaUdpClient {
         System.out.println("JAVA UDP CLIENT");
         DatagramSocket socket = null;
         int portNumber = 9008;
+        byte[] receiveBuffer = new byte[1024];
 
         try {
             socket = new DatagramSocket();
@@ -17,6 +18,12 @@ public class JavaUdpClient {
 
             DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, address, portNumber);
             socket.send(sendPacket);
+
+            DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
+            socket.receive(receivePacket);
+            String receivedDate = new String(receivePacket.getData());
+
+            System.out.println("received message: " + receivedDate);
         }
         catch(Exception e){
             e.printStackTrace();
