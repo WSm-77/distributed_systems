@@ -1,5 +1,7 @@
 package server;
 
+import java.io.IOException;
+import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -14,7 +16,8 @@ public class Server {
         this.threadPool = Executors.newFixedThreadPool(poolSize);
     }
 
-    public void start() {
+
+    public void start() throws IOException {
         System.out.println(String.format("Starting server on port %d", serverSocket.getLocalPort()));
 
         while (true) {
@@ -25,9 +28,16 @@ public class Server {
                 ClientHandler clientHandler = new ClientHandler(clientSocket);
                 this.threadPool.execute(clientHandler);
             } catch (Exception e) {
-                this.threadPool.shutdown();
+                break;
             }
         }
+
+        this.close();
+    }
+
+    private void close() throws IOException {
+        this.serverSocket.close();
+        this.threadPool.shutdown();
     }
 
     public static void main(String[] args) {
