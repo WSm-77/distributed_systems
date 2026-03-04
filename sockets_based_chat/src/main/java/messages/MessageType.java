@@ -1,6 +1,6 @@
 package messages;
 
-public enum MessagesType {
+public enum MessageType {
     REGISTER_CLIENT,
     UNREGISTER_CLIENT,
     MESSAGE

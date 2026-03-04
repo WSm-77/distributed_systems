@@ -54,7 +54,7 @@ public class ClientHandler implements Runnable {
 
     private void sendToClient(String message) {
         try {
-            Message messageObject = new Message(messages.MessagesType.MESSAGE, message);
+            Message messageObject = new Message(messages.MessageType.MESSAGE, message);
             this.out.writeObject(messageObject);
             this.out.flush();
         } catch (IOException e) {

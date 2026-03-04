@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import messages.Message;
-import messages.MessagesType;
+import messages.MessageType;
 
 public class Client {
     private static final int PORT = 12345;
@@ -47,11 +47,11 @@ public class Client {
 
     public void sendToChat(String msg) throws IOException {
         System.out.println(String.format("[ME]: %s", msg));
-        this.sendMessage(new Message(MessagesType.MESSAGE, msg));
+        this.sendMessage(new Message(MessageType.MESSAGE, msg));
     }
 
     public void closeConnection() throws IOException {
-        Message unregisterMessage = new Message(MessagesType.UNREGISTER_CLIENT, this.name);
+        Message unregisterMessage = new Message(MessageType.UNREGISTER_CLIENT, this.name);
         this.sendMessage(unregisterMessage);
         in.close();
         out.close();
@@ -59,7 +59,7 @@ public class Client {
     }
 
     public void setUpConnection() throws IOException {
-        Message registerMessage = new Message(MessagesType.REGISTER_CLIENT, this.name);
+        Message registerMessage = new Message(MessageType.REGISTER_CLIENT, this.name);
         this.sendMessage(registerMessage);
         Message response = this.receiveMessage();
 

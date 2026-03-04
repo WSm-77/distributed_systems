@@ -3,15 +3,15 @@ package messages;
 import java.io.Serializable;
 
 public class Message implements Serializable {
-    private MessagesType type;
+    private MessageType type;
     private String content;
 
-    public Message(MessagesType type, String content) {
+    public Message(MessageType type, String content) {
         this.type = type;
         this.content = content;
     }
 
-    public MessagesType getType() {
+    public MessageType getType() {
         return type;
     }
 
