@@ -4,16 +4,19 @@ import java.io.ObjectInputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Optional;
 
 import messages.Message;
 
 public class ClientHandler implements Runnable {
-    private static final List<Socket> clients = new ArrayList<>();
+    private static final Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());
     private final Socket clientSocket;
     private final ObjectOutputStream out;
     private final ObjectInputStream in;
+    private Optional<String> clientName = Optional.empty();
 
     public ClientHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
@@ -26,16 +29,27 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private void setupConnection() {
+    private static void addClient(ClientHandler clientHandler) {
+        ClientHandler.clients.add(clientHandler);
+        System.out.println("Client added to list. Total clients: " + ClientHandler.clients.size());
+
+    }
+
+    private static void removeClient(ClientHandler clientHandler) {
+        ClientHandler.clients.remove(clientHandler);
+        System.out.println(String.format("Client removed. Total clients: %d", ClientHandler.clients.size()));
+    }
+
+    private void setUpConnection(String clientName) {
         System.out.println("Handling client: " + clientSocket.getRemoteSocketAddress());
 
-        Message clientName = this.receiveFromClient();
+        this.clientName = Optional.of(clientName);
 
-        System.out.println("Client name: " + clientName.getContent());
+        System.out.println("Client name: " + this.clientName.get());
 
-        clients.add(this.clientSocket);
-        System.out.println("Client added to list. Total clients: " + clients.size());
-        this.sendToClient("Welcome " + clientName.getContent() + "!");
+        ClientHandler.addClient(this);
+
+        this.sendToClient("Welcome " + clientName + "!");
     }
 
     private void sendToClient(String message) {
@@ -44,7 +58,8 @@ public class ClientHandler implements Runnable {
             this.out.writeObject(messageObject);
             this.out.flush();
         } catch (IOException e) {
-            System.out.println("Error sending message to client: " + e.getMessage());
+            System.out.println(String.format("Could not send message: %s", message));
+            System.out.println(String.format("Error while sending message to client: %s", e.getMessage()));
         }
     }
 
@@ -63,26 +78,62 @@ public class ClientHandler implements Runnable {
     }
 
     private void closeConnection() {
+        System.out.println(String.format("Closing connection for client: %s", this.clientName.orElse("unknown")));
+
         try {
             this.in.close();
             this.out.close();
             this.clientSocket.close();
+
+            ClientHandler.removeClient(this);
+
+            System.out.println(String.format("Connection closed successfully for client: %s", this.clientName.orElse("unknown")));
         } catch (IOException e) {
             System.out.println("Error closing connection: " + e.getMessage());
         }
     }
 
-    @Override
-    public void run() {
-        this.setupConnection();
+    private void handleMessage(Message message) {
+        if (message == null) {
+            System.out.println("Received null message, ignoring.");
+            return;
+        }
 
-        try {
-            // TODO: implement message broadcasting to all clients
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
-        } finally {
-            this.closeConnection();
+        System.out.println("Received message: " + message);
+
+        switch (message.getType()) {
+            case REGISTER_CLIENT -> this.setUpConnection(message.getContent());
+            case UNREGISTER_CLIENT -> this.closeConnection();
+            case MESSAGE -> this.passMessageToAllClients(message.getContent());
         }
     }
 
+    private void passMessageToAllClients(String content) {
+        // TODO: implement message broadcasting to all clients
+    }
+
+    @Override
+    public void run() {
+        while (!this.clientSocket.isClosed()) {
+            Message message = this.receiveFromClient();
+            this.handleMessage(message);
+        }
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        ClientHandler that = (ClientHandler)other;
+
+        return clientSocket.equals(that.clientSocket);
+    }
+
+    @Override
+    public int hashCode() {
+        return clientSocket.hashCode();
+    }
 }

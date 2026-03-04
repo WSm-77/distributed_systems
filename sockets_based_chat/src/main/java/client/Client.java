@@ -40,7 +40,9 @@ public class Client {
         return null;
     }
 
-    public void stopConnection() throws IOException {
+    public void closeConnection() throws IOException {
+        Message unregisterMessage = new Message(MessagesType.UNREGISTER_CLIENT, this.name);
+        this.sendMessage(unregisterMessage);
         in.close();
         out.close();
         clientSocket.close();
@@ -61,7 +63,7 @@ public class Client {
             Client client = new Client("127.0.0.1", Client.PORT, name);
             client.setUpConnection();
 
-            client.stopConnection();
+            client.closeConnection();
         } catch (IOException e) {
             System.out.println("Error in client: " + e.getMessage());
         }
