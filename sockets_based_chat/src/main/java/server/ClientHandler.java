@@ -114,7 +114,7 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        while (!this.clientSocket.isClosed()) {
+        while (!this.clientSocket.isClosed() && this.clientSocket.isConnected()) {
             Message message = this.receiveFromClient();
             this.handleMessage(message);
         }
