@@ -78,7 +78,7 @@ public class ClientHandler implements Runnable {
     }
 
     private void closeConnection() {
-        System.out.println(String.format("Closing connection for client: %s", this.clientName.orElse("unknown")));
+        System.out.println(String.format("Closing connection for client: %s", this.getClientName()));
 
         try {
             this.in.close();
@@ -87,7 +87,7 @@ public class ClientHandler implements Runnable {
 
             ClientHandler.removeClient(this);
 
-            System.out.println(String.format("Connection closed successfully for client: %s", this.clientName.orElse("unknown")));
+            System.out.println(String.format("Connection closed successfully for client: %s", this.getClientName()));
         } catch (IOException e) {
             System.out.println("Error closing connection: " + e.getMessage());
         }
@@ -109,7 +109,15 @@ public class ClientHandler implements Runnable {
     }
 
     private void passMessageToAllClients(String content) {
-        // TODO: implement message broadcasting to all clients
+        for (ClientHandler client : ClientHandler.clients) {
+            if (!client.equals(this)) {
+                client.sendToClient(String.format("[%s]: %s", this.getClientName(), content));
+            }
+        }
+    }
+
+    private String getClientName() {
+        return this.clientName.orElse("unknown");
     }
 
     @Override

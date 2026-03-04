@@ -5,10 +5,8 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import messages.Message;
 import messages.MessagesType;
@@ -115,7 +113,7 @@ public class Client {
     }
 
     public static void main(String[] args) {
-        String name = args.length > 0 ? args[0] : "Client";
+        String name = args.length > 0 ? args[0] : "Derek";
 
         try {
             Client client = new Client("127.0.0.1", Client.PORT, name);
