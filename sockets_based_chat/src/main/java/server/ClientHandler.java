@@ -8,7 +8,6 @@ import java.net.Socket;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import client.ClientInfo;
@@ -121,6 +120,7 @@ public class ClientHandler implements Runnable {
             case REGISTER_CLIENT -> this.setUpConnection(message.getContent());
             case UNREGISTER_CLIENT -> this.closeConnection();
             case MESSAGE -> this.passMessageToAllClients(message.getContent());
+            default -> System.out.println("Unhandled message of type: " + message.getType());
         }
     }
 
