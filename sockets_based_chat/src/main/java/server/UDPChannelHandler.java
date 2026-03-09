@@ -24,6 +24,16 @@ public class UDPChannelHandler implements Runnable {
         this.datagramSocket = new DatagramSocket(port);
     }
 
+    private void addClient(String clientName, ClientInfo senderInfo) {
+        udpClients.put(clientName, senderInfo);
+        System.out.println("UDP registered: " + clientName + " -> " + senderInfo);
+    }
+
+    private void removeClient(String clientName) {
+        udpClients.remove(clientName);
+        System.out.println("UDP unregistered: " + clientName);
+    }
+
     private byte[] toBytes(Message message) throws IOException {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
@@ -46,7 +56,7 @@ public class UDPChannelHandler implements Runnable {
         return null;
     }
 
-    private void forwardToAllExceptSender(Message message, ClientInfo senderInfo) throws IOException {
+    private void passMessageToAllClients(Message message, ClientInfo senderInfo) throws IOException {
         byte[] sendBuffer = this.toBytes(message);
 
         for (ClientInfo clientInfo : udpClients.values()) {
@@ -58,6 +68,15 @@ public class UDPChannelHandler implements Runnable {
             DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, clientInfo.address(),
                 clientInfo.port());
             datagramSocket.send(sendPacket);
+        }
+    }
+
+    private void handleMessage(Message message, ClientInfo senderInfo) throws IOException {
+        switch (message.getType()) {
+            case UDP_REGISTER_CLIENT -> this.addClient(message.getContent(), senderInfo);
+            case UDP_UNREGISTER_CLIENT -> this.removeClient(message.getContent());
+            case UDP_MESSAGE -> this.passMessageToAllClients(message, senderInfo);
+            default -> System.out.println("Unhandled UDP message of type: " + message.getType());
         }
     }
 
@@ -75,20 +94,8 @@ public class UDPChannelHandler implements Runnable {
                     continue;
                 }
 
-                switch (message.getType()) {
-                    case UDP_REGISTER_CLIENT -> {
-                        udpClients.put(message.getContent(), senderInfo);
-                        System.out.println("UDP registered: " + message.getContent() + " -> " + senderInfo);
-                    }
-                    case UDP_UNREGISTER_CLIENT -> {
-                        udpClients.remove(message.getContent());
-                        System.out.println("UDP unregistered: " + message.getContent());
-                    }
-                    case UDP_MESSAGE -> this.forwardToAllExceptSender(message, senderInfo);
-                    default -> {
-                        // ignore non-UDP message types on UDP channel
-                    }
-                }
+                this.handleMessage(message, senderInfo);
+
             } catch (IOException e) {
                 if (running && !datagramSocket.isClosed()) {
                     System.out.println("Error receiving UDP message: " + e.getMessage());

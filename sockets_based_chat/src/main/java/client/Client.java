@@ -141,7 +141,7 @@ public class Client {
             try {
                 Message message = this.receiveMessage();
                 if (message != null) {
-                    System.out.println(String.format("[SERVER]: %s", message.getContent()));
+                    System.out.println(message.getContent());
                 }
             } catch (IOException e) {
                 if (this.running) {
