@@ -3,17 +3,24 @@ package client;
 import java.io.ObjectInputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import messages.Message;
 import messages.MessageType;
+import server.Server;
+import server.UDPChannelHandler;
 
 public class Client {
     private static final int PORT = 12345;
     private final Socket clientSocket;
+    private final DatagramSocket udpSocket;
     private final ObjectOutputStream out;
     private final ObjectInputStream in;
     private final String name;
@@ -22,6 +29,7 @@ public class Client {
 
     public Client(String ip, int port, String name) throws IOException {
         this.clientSocket = new Socket(ip, port);
+        this.udpSocket = new DatagramSocket();
         this.out = new ObjectOutputStream(clientSocket.getOutputStream());
         this.in = new ObjectInputStream(clientSocket.getInputStream());
         this.name = name;
@@ -87,13 +95,26 @@ public class Client {
                 if ("exit".equalsIgnoreCase(input)) {
                     this.stop();
                     break;
+                } else if (input.startsWith("U ")) {
+                    String udpMessage = input.substring(2);
+                    this.sendUDPMessage(udpMessage);
+                } else {
+                    this.sendToChat(input);
                 }
-
-                this.sendToChat(input);
             }
         } catch (IOException e) {
             System.out.println("Error sending message: " + e.getMessage());
         }
+    }
+
+    private void sendUDPMessage(String udpMessage) throws UnknownHostException, IOException {
+        System.out.println(String.format("Sending UDP message: %s", udpMessage));
+
+        byte[] sendBuffer = udpMessage.getBytes();
+
+        InetAddress serverAddr = InetAddress.getByName(Server.ADDRESS);
+        DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, serverAddr, Server.PORT);
+        this.udpSocket.send(sendPacket);
     }
 
     public void start() throws IOException {
@@ -116,7 +137,7 @@ public class Client {
         String name = args.length > 0 ? args[0] : "Derek";
 
         try {
-            Client client = new Client("127.0.0.1", Client.PORT, name);
+            Client client = new Client(Server.ADDRESS, Client.PORT, name);
             client.start();
         } catch (IOException e) {
             System.out.println("Error in client: " + e.getMessage());

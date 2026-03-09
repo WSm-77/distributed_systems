@@ -3,10 +3,16 @@ package server;
 import java.io.ObjectInputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
+import client.ClientInfo;
+
 import java.util.Optional;
 
 import messages.Message;
@@ -38,6 +44,16 @@ public class ClientHandler implements Runnable {
     private static void removeClient(ClientHandler clientHandler) {
         ClientHandler.clients.remove(clientHandler);
         System.out.println(String.format("Client removed. Total clients: %d", ClientHandler.clients.size()));
+    }
+
+    public static Set<ClientInfo> getClientsInfo() {
+        return ClientHandler.clients.stream()
+            .map((client) -> {
+                InetAddress clientAddress = client.clientSocket.getInetAddress();
+                int clientPort = client.clientSocket.getPort();
+                return new ClientInfo(clientAddress, clientPort);
+            })
+            .collect(Collectors.toSet());
     }
 
     private void setUpConnection(String clientName) {
