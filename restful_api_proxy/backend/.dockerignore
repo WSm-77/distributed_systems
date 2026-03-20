@@ -1,0 +1,7 @@
+__pycache__/
+.venv/
+.astro
+.DS_Store
+node_modules
+dist
+*.json
