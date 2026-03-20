@@ -1,14 +1,10 @@
-import requests, os
-from dotenv import load_dotenv
+import requests
 from data_models.recipe import RecipeResponse
-
-load_dotenv(os.path.dirname(os.path.dirname(__file__)) + "/.env")
-
-THE_MEAL_DB_API_KEY = os.getenv("THE_MEAL_DB_API_KEY")
-print(f"Using TheMealDB API key: {THE_MEAL_DB_API_KEY}")
+from config.config import CONFIG
 
 def get_recipe(diet_preferences: str):
-    response = requests.get(f"https://www.themealdb.com/api/json/v1/{THE_MEAL_DB_API_KEY}/random.php")
+    print(f"Config values: {CONFIG.food_data_central_api_key}, {CONFIG.the_meal_db_api_key}")
+    response = requests.get(f"https://www.themealdb.com/api/json/v1/{CONFIG.the_meal_db_api_key}/random.php")
     data = response.json()
     validated_recipe = RecipeResponse.model_validate(data)
 
