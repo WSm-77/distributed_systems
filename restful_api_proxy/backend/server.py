@@ -11,9 +11,12 @@ async def get_recipe_api(diet_preferences: str = ""):
         recipeResponse = get_recipe(diet_preferences)
         top_recipe = recipeResponse.meals[0]
 
-        print(f"Ingredients for {top_recipe.strMeal}:")
+        vitamines = set()
+
         for ingredient in top_recipe.get_ingredients():
-            print(f" - {ingredient.name}: {ingredient.measure}")
+            food_info = get_food_info(ingredient.name)
+            vitamins = food_info.get_vitamin_nutrients()
+            vitamines.update(vitamins)
 
         return JSONResponse(content=top_recipe.model_dump(), status_code=status.HTTP_200_OK)
     except Exception as e:

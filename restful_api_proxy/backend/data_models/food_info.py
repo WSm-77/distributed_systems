@@ -119,7 +119,14 @@ class SRLegacyFoodItem(BaseModel):
     tradeChannels: list[str] = Field(default_factory=list)
 
 class FoodInfo(SRLegacyFoodItem):
-    pass
+    def get_vitamin_nutrients(self) -> list[str]:
+        vitamin_nutrients = []
+        for nutrient in self.foodNutrients:
+            if "vitamin" in nutrient.nutrientName.lower():
+                vitamin = nutrient.nutrientName.split(",")[0].strip()
+                vitamin_nutrients.append(vitamin)
+
+        return vitamin_nutrients
 
 class Aggregations(BaseModel):
     model_config = ConfigDict(extra="allow")
