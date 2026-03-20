@@ -10,5 +10,6 @@ load_dotenv(ENV_PATH)
 class Settings(BaseSettings):
     food_data_central_api_key: str
     the_meal_db_api_key: str
+    max_meals_to_return: int = 3
 
 CONFIG = Settings()
