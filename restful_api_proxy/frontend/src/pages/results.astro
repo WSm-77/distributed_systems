@@ -1,0 +1,122 @@
+---
+import "../styles/global.css";
+
+const apiBaseUrl = (import.meta.env.PUBLIC_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
+
+const pageUrl = new URL(Astro.request.url);
+const params = pageUrl.searchParams;
+
+const selectedMainIngredient = params.get("main_ingredient")?.trim() || "";
+const selectedCategory = params.get("category")?.trim() || "";
+const selectedArea = params.get("area")?.trim() || "";
+const selectedExclusions = params.getAll("ingredients_to_exclude").map((item) => item.trim()).filter(Boolean);
+
+const backendParams = new URLSearchParams();
+if (selectedMainIngredient) backendParams.append("main_ingredient", selectedMainIngredient);
+if (selectedCategory) backendParams.append("category", selectedCategory);
+if (selectedArea) backendParams.append("area", selectedArea);
+selectedExclusions.forEach((item) => backendParams.append("ingredients_to_exclude", item));
+
+const endpoint = `${apiBaseUrl}/v1/meal${backendParams.toString().length ? `?${backendParams.toString()}` : ""}`;
+
+let responseStatus = 0;
+let requestFailed = false;
+let errorMessage = "";
+let meal = null;
+
+try {
+  const response = await fetch(endpoint, {
+    method: "GET",
+    headers: { "Accept": "application/json" }
+  });
+
+  responseStatus = response.status;
+
+  if (!response.ok) {
+    requestFailed = true;
+    const errorPayload = await response.json().catch(() => ({}));
+    errorMessage = errorPayload.message || errorPayload.error || "The backend request failed.";
+  } else {
+    meal = await response.json();
+  }
+} catch (error) {
+  requestFailed = true;
+  errorMessage = error instanceof Error ? error.message : "Cannot reach backend API.";
+}
+
+const hasMeal = Boolean(meal && meal.strMeal);
+const ingredientList = hasMeal && Array.isArray(meal.ingredients) ? meal.ingredients : [];
+const vitamins = hasMeal && Array.isArray(meal.vitamines) ? meal.vitamines : [];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Meal Result</title>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <h1>Meal Result</h1>
+        <p>Generated from backend response using your selected filters.</p>
+      </section>
+
+      <section class="card">
+        <p class="meta">
+          <span>Backend: {apiBaseUrl}</span>
+          <span>Status: {responseStatus || "n/a"}</span>
+        </p>
+
+        {requestFailed && (
+          <div class="alert error">
+            <strong>Request failed.</strong>
+            <div>{errorMessage}</div>
+          </div>
+        )}
+
+        {!requestFailed && !hasMeal && (
+          <div class="alert error">
+            No meal was returned for the selected criteria.
+          </div>
+        )}
+
+        {hasMeal && (
+          <>
+            <div class="alert ok">Meal loaded successfully.</div>
+            <h2>{meal.strMeal}</h2>
+            <p class="meta">
+              <span>Category: {meal.strCategory || "Unknown"}</span>
+              <span>Area: {meal.strArea || "Unknown"}</span>
+            </p>
+
+            <h3>Ingredients</h3>
+            {ingredientList.length > 0 ? (
+              <ul class="ingredient-list">
+                {ingredientList.map((item) => (
+                  <li>{item.measure || ""} {item.name}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No ingredient list was provided by backend.</p>
+            )}
+
+            <h3>Vitamins</h3>
+            {vitamins.length > 0 ? (
+              <p>{vitamins.join(", ")}</p>
+            ) : (
+              <p>Vitamin enrichment is currently unavailable for this result.</p>
+            )}
+
+            <h3>Instructions</h3>
+            <p class="instructions">{meal.strInstructions || "No instructions provided."}</p>
+          </>
+        )}
+
+        <div class="top-actions">
+          <a class="button" href="/">Back To Form</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

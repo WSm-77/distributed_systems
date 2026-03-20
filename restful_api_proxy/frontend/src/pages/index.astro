@@ -1,0 +1,107 @@
+---
+import "../styles/global.css";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Meal Finder</title>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <h1>Meal Finder</h1>
+        <p>
+          Build a request using ingredient, region, and category filters. The service will call external APIs and return a generated result page.
+        </p>
+      </section>
+
+      <section class="card">
+        <form id="meal-search-form" action="/results" method="get" class="grid" novalidate>
+          <div class="grid two">
+            <label>
+              Main Ingredient
+              <input type="text" name="main_ingredient" placeholder="chicken" maxlength="64" />
+            </label>
+
+            <label>
+              Category
+              <input type="text" name="category" placeholder="Vegetarian" maxlength="64" />
+            </label>
+
+            <label>
+              Area
+              <input type="text" name="area" placeholder="Italian" maxlength="64" />
+            </label>
+
+            <label>
+              Ingredients To Exclude
+              <input
+                type="text"
+                name="ingredients_to_exclude_input"
+                placeholder="garlic, onion"
+                maxlength="250"
+              />
+              <span class="inline-note">Use commas to separate multiple ingredients.</span>
+            </label>
+          </div>
+
+          <div id="form-error" class="alert error" hidden></div>
+          <button type="submit">Search Meal</button>
+        </form>
+      </section>
+    </main>
+
+    <script>
+      const form = document.querySelector("#meal-search-form");
+      const formError = document.querySelector("#form-error");
+
+      form?.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        if (!(form instanceof HTMLFormElement)) return;
+
+        if (formError instanceof HTMLElement) {
+          formError.hidden = true;
+          formError.textContent = "";
+        }
+
+        const data = new FormData(form);
+        const query = new URLSearchParams();
+
+        const addTrimmed = (key, rawValue) => {
+          const value = String(rawValue ?? "").trim();
+          if (value.length > 0) {
+            query.append(key, value);
+          }
+        };
+
+        addTrimmed("main_ingredient", data.get("main_ingredient"));
+        addTrimmed("category", data.get("category"));
+        addTrimmed("area", data.get("area"));
+
+        const rawExclusions = String(data.get("ingredients_to_exclude_input") ?? "").trim();
+        if (rawExclusions.length > 0) {
+          const exclusions = rawExclusions
+            .split(",")
+            .map((item) => item.trim())
+            .filter((item, index, arr) => item.length > 0 && arr.indexOf(item) === index);
+
+          if (exclusions.length === 0) {
+            if (formError instanceof HTMLElement) {
+              formError.hidden = false;
+              formError.textContent = "Ingredients to exclude are invalid. Use comma-separated words.";
+            }
+            return;
+          }
+
+          exclusions.forEach((value) => query.append("ingredients_to_exclude", value));
+        }
+
+        const destination = query.toString().length > 0 ? `/results?${query.toString()}` : "/results";
+        window.location.assign(destination);
+      });
+    </script>
+  </body>
+</html>
