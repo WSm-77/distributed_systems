@@ -9,6 +9,9 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "astro": "^5.5.5"
+    "@astrojs/check": "^0.9.8",
+    "@astrojs/netlify": "^7.0.4",
+    "astro": "^6.0.8",
+    "typescript": "^5.9.3"
   }
 }
