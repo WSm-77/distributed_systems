@@ -57,6 +57,44 @@ import "../styles/global.css";
       const form = document.querySelector("#meal-search-form");
       const formError = document.querySelector("#form-error");
 
+      const filterFieldNames = [
+        "main_ingredient",
+        "category",
+        "area",
+        "ingredients_to_exclude_input",
+      ];
+
+      const filterInputs = filterFieldNames
+        .map((name) => form?.querySelector(`[name="${name}"]`))
+        .filter((input) => input instanceof HTMLInputElement);
+
+      const getActiveFilterNames = () => {
+        const activeNames: string[] = [];
+
+        filterInputs.forEach((input) => {
+          if (input.value.trim().length > 0) {
+            activeNames.push(input.name);
+          }
+        });
+
+        return activeNames;
+      };
+
+      const updateFilterAvailability = () => {
+        const activeNames = getActiveFilterNames();
+        const lockToSingleFilter = activeNames.length === 1;
+        const activeName = lockToSingleFilter ? activeNames[0] : "";
+
+        filterInputs.forEach((input) => {
+          input.disabled = lockToSingleFilter && input.name !== activeName;
+        });
+      };
+
+      filterInputs.forEach((input) => {
+        input.addEventListener("input", updateFilterAvailability);
+      });
+      updateFilterAvailability();
+
       form?.addEventListener("submit", (event) => {
         console.info("[Meal Finder] Submit triggered");
         event.preventDefault();
@@ -71,25 +109,19 @@ import "../styles/global.css";
         const data = new FormData(form);
         const query = new URLSearchParams();
 
-        const addTrimmed = (key, rawValue) => {
-          const value = String(rawValue ?? "").trim();
-          if (value.length > 0) {
-            query.append(key, value);
-          }
-        };
-
-        addTrimmed("main_ingredient", data.get("main_ingredient"));
-        addTrimmed("category", data.get("category"));
-        addTrimmed("area", data.get("area"));
+        const mainIngredient = String(data.get("main_ingredient") ?? "").trim();
+        const category = String(data.get("category") ?? "").trim();
+        const area = String(data.get("area") ?? "").trim();
         console.debug("[Meal Finder] Base filters prepared", {
-          main_ingredient: String(data.get("main_ingredient") ?? "").trim(),
-          category: String(data.get("category") ?? "").trim(),
-          area: String(data.get("area") ?? "").trim(),
+          main_ingredient: mainIngredient,
+          category,
+          area,
         });
 
         const rawExclusions = String(data.get("ingredients_to_exclude_input") ?? "").trim();
+        let exclusions: string[] = [];
         if (rawExclusions.length > 0) {
-          const exclusions = rawExclusions
+          exclusions = rawExclusions
             .split(",")
             .map((item) => item.trim())
             .filter((item, index, arr) => item.length > 0 && arr.indexOf(item) === index);
@@ -102,10 +134,33 @@ import "../styles/global.css";
             console.warn("[Meal Finder] Invalid exclusions input", { rawExclusions });
             return;
           }
-
-          exclusions.forEach((value) => query.append("ingredients_to_exclude", value));
           console.debug("[Meal Finder] Exclusions parsed", { exclusions });
         }
+
+        const activeFiltersCount =
+          (mainIngredient ? 1 : 0) +
+          (category ? 1 : 0) +
+          (area ? 1 : 0) +
+          (exclusions.length > 0 ? 1 : 0);
+
+        if (activeFiltersCount > 1) {
+          if (formError instanceof HTMLElement) {
+            formError.hidden = false;
+            formError.textContent = "Please use only one filter at a time.";
+          }
+          console.warn("[Meal Finder] Multiple filters selected", {
+            mainIngredient,
+            category,
+            area,
+            exclusions,
+          });
+          return;
+        }
+
+        if (mainIngredient) query.append("main_ingredient", mainIngredient);
+        if (category) query.append("category", category);
+        if (area) query.append("area", area);
+        exclusions.forEach((value) => query.append("ingredients_to_exclude", value));
 
         const destination = query.toString().length > 0 ? `/results?${query.toString()}` : "/results";
         console.info("[Meal Finder] Redirecting to results", {
