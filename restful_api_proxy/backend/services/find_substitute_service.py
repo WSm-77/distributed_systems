@@ -21,7 +21,7 @@ def find_substitute(recipe: Recipe, ingredients: list[str]) -> Recipe | None:
         "model": CONFIG.model,
         "messages": [
             {"role": "system", "content": CONFIG.system_prompt},
-            {"role": "user", "content": f"Modify following recipe by replacing {ingredients_str} with a suitable substitute? {recipe.model_dump_json()}"}
+            {"role": "user", "content": f"Modify following recipe by replacing {ingredients_str} with a suitable substitute: {recipe.model_dump_json()}"}
         ],
         "stream": False,
         "format": {
