@@ -12,12 +12,16 @@ recipe_field_names = list(
     )
 )
 
-def find_substitute(recipe: Recipe, ingredient: str) -> Recipe | None:
+def find_substitute(recipe: Recipe, ingredients: list[str]) -> Recipe | None:
+    ingredients_str = ", ".join(ingredients)
+
+    logging.info("Finding substitute for ingredients: %s in recipe: %s", ingredients_str, recipe.strMeal)
+
     payload = {
         "model": CONFIG.model,
         "messages": [
             {"role": "system", "content": CONFIG.system_prompt},
-            {"role": "user", "content": f"Modify following recipe by replacing {ingredient} with a suitable substitute? {recipe.model_dump_json()}"}
+            {"role": "user", "content": f"Modify following recipe by replacing {ingredients_str} with a suitable substitute? {recipe.model_dump_json()}"}
         ],
         "stream": False,
         "format": {
@@ -56,9 +60,9 @@ def find_substitute(recipe: Recipe, ingredient: str) -> Recipe | None:
         merged_recipe.update(content)
         modified_recipe_validated = Recipe.model_validate(merged_recipe)
 
-        logging.info("Substitute recipe generated for ingredient: %s", ingredient)
+        logging.info("Substitute recipe generated for ingredients: %s", ingredients_str)
 
         return modified_recipe_validated
     except Exception:
-        logging.exception("Error while finding substitute for ingredient: %s", ingredient)
+        logging.exception("Error while finding substitute for ingredients: %s", ingredients_str)
         return None

@@ -1,15 +1,11 @@
-import json
-import logging
-import random
-
-import requests
-
+import json, logging, random, requests
 from config.config import CONFIG
 from data_models.recipe import Recipe, RecipeResponse
+from services.find_substitute_service import find_substitute
 
 logger = logging.getLogger(__name__)
 
-def get_random_recipies():
+def get_random_recipe():
     logger.debug("Fetching random recipe from TheMealDB")
     response = requests.get(
         f"https://www.themealdb.com/api/json/v1/{CONFIG.the_meal_db_api_key}/random.php",
@@ -60,48 +56,50 @@ def get_recipe(main_ingredient: str | None = None, ingredients_to_exclude: list[
     )
     logger.debug("TheMealDB filter parameters: %s", params)
 
+    detailed_recipe = None
+
     if not params:
         logger.info("No filters provided, using random recipe")
-        return get_random_recipies()
+        detailed_recipe = get_random_recipe()
+    else:
+        url = f"https://www.themealdb.com/api/json/v1/{CONFIG.the_meal_db_api_key}/filter.php"
+        response = requests.get(url, params=params, timeout=15)
 
-    url = f"https://www.themealdb.com/api/json/v1/{CONFIG.the_meal_db_api_key}/filter.php"
-    response = requests.get(url, params=params, timeout=15)
+        if not response.ok:
+            logger.error(
+                "Failed to fetch recipes from TheMealDB API (status=%s, body=%s)",
+                response.status_code,
+                response.text[:500],
+            )
+            return None
 
-    if not response.ok:
-        logger.error(
-            "Failed to fetch recipes from TheMealDB API (status=%s, body=%s)",
-            response.status_code,
-            response.text[:500],
-        )
+        recipies = response.json()
+        logger.debug("Raw response from TheMealDB API: %s", json.dumps(recipies)[:1000])
+
+        if not recipies.get("meals"):
+            logger.warning("No recipes returned for the provided filters")
+            return None
+
+        recipe = random.choice(recipies["meals"])
+
+        logger.debug("Selected recipe: %s", json.dumps(recipe))
+
+        detailed_recipe = get_recipe_by_id(recipe["idMeal"])
+
+    if not detailed_recipe:
+        logger.warning("Failed to fetch details for recipe id=%s", recipe["idMeal"])
         return None
 
-    recipies = response.json()
-    logger.debug("Raw response from TheMealDB API: %s", json.dumps(recipies)[:1000])
+    if ingredients_to_exclude:
+        logger.info("Applying ingredient exclusions: %s", ", ".join(ingredients_to_exclude))
 
-    if not recipies.get("meals"):
-        logger.warning("No recipes returned for the provided filters")
-        return None
+        modified_recipe = find_substitute(detailed_recipe, ingredients_to_exclude)
 
-    random.shuffle(recipies["meals"])
+        if modified_recipe:
+            logger.info("Successfully found substitute recipe for exclusions")
+            return modified_recipe
+        else:
+            logger.warning("Failed to find substitute recipe for exclusions, returning original recipe")
+            return detailed_recipe
 
-    normalized_exclusions = {
-        ingredient.strip().lower().rstrip("s") for ingredient in ingredients_to_exclude
-    }
-
-    for meal in recipies["meals"]:
-
-        recipe = get_recipe_by_id(meal["idMeal"])
-
-        if recipe is None:
-            logger.debug("Skipping meal id=%s due to missing detailed recipe", meal["idMeal"])
-            continue
-
-        ingredient_names = set(map(lambda x: x.name.strip("s"), recipe.get_ingredients()))
-
-        if not any(ingredient_to_exclude in ingredient_names for ingredient_to_exclude in normalized_exclusions):
-            logger.info("Selected filtered recipe: %s", recipe.strMeal)
-            return recipe
-
-    logger.info("No recipe remained after applying exclusions")
-
-    return None
+    return detailed_recipe

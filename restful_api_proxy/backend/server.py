@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import FastAPI, status
+from fastapi import FastAPI, Query, status
 from fastapi.responses import JSONResponse
 
 from config.logging_config import setup_logging
@@ -14,7 +14,12 @@ logger = logging.getLogger(__name__)
 server = FastAPI()
 
 @server.get("/v1/recipe")
-async def get_recipe_api(main_ingredient: str | None = None, ingredients_to_exclude: list[str] = [], area: str | None = None, category: str | None = None):
+async def get_recipe_api(
+    main_ingredient: str | None = None,
+    ingredients_to_exclude: list[str] = Query(default_factory=list),
+    area: str | None = None,
+    category: str | None = None,
+):
     logger.info(
         "GET /v1/recipe called (main_ingredient=%s, area=%s, category=%s, exclusions=%d)",
         main_ingredient,
@@ -56,7 +61,12 @@ async def get_food_info_api(food_name: str):
         return JSONResponse(content={"error": "Internal server error"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @server.get("/v1/meal")
-async def get_meal_api(main_ingredient: str | None = None, ingredients_to_exclude: list[str] = [], area: str | None = None, category: str | None = None):
+async def get_meal_api(
+    main_ingredient: str | None = None,
+    ingredients_to_exclude: list[str] = Query(default_factory=list),
+    area: str | None = None,
+    category: str | None = None,
+):
     logger.info(
         "GET /v1/meal called (main_ingredient=%s, area=%s, category=%s, exclusions=%d)",
         main_ingredient,
