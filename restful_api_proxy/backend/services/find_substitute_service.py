@@ -1,9 +1,12 @@
-import requests, logging, json
+import json
+import logging
+
+import requests
 from data_models.recipe import Recipe
 from config.logging_config import setup_logging
 
 from pydantic import BaseModel, ConfigDict
-from typing import Dict
+from typing import Any
 
 setup_logging()
 
@@ -13,40 +16,95 @@ MODEL = "llama3.1:8b"
 headers = {"Content-Type": "application/json"}
 
 SYSTEM_PROMPT = """
-You are a helpful assistant that get's Recipe objects as an input and suggests substitutes for ingredients that the user wants to exclude. You should suggest substitutes that are as close as possible to the original ingredient in terms of taste and texture, and that would work well in the recipe. In the response, substitute the ingredient in the strIngredientX fields and the ingredient in the strInstructions field.
+You are a helpful assistant that get's Recipe objects as an input and suggests substitutes for ingredients that the user wants to exclude. You should suggest substitutes that are as close as possible to the original ingredient in terms of taste and texture, and that would work well in the recipe. In the response, substitute the ingredient in the strIngredientX fields and the ingredient in the strInstructions field. Return recipe with all fields unchanged except the ones that need to be modified to replace the ingredient. If the ingredient to be replaced is not present in the recipe, return the original recipe without any modifications.
 """.strip()
+
+class ResponseMessage(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    content: str
+
 
 class OllamaResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     model: str
-    message: Dict
+    message: ResponseMessage
 
 
-def find_substitute(recipe: Recipe, ingredient: str) -> str | None:
+recipe_model_schema = Recipe.model_json_schema()
+recipe_field_names = list(
+    filter(
+        lambda x:
+        "strIngredient" in x or "strMeasure" in x or "strInstructions" == x,
+        Recipe.model_fields.keys()
+    )
+)
+
+def find_substitute(recipe: Recipe, ingredient: str) -> Recipe | None:
+
+    # logging.info(recipe_field_names)
+
+    # return
     payload = {
         "model": MODEL,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"Modify following recipe by replacing {ingredient} with a suitable substitute? {recipe}"}
+            {"role": "user", "content": f"Modify following recipe by replacing {ingredient} with a suitable substitute? {recipe.model_dump_json()}"}
         ],
         "stream": False,
+        "format": {
+            "type": "object",
+            "properties": recipe_model_schema.get("properties", {}),
+            "required": recipe_field_names
+        }
     }
 
+    # logging.debug("Ollama API request payload: %s", json.dumps(payload, indent=2))
+    # return None
+
     try:
-        response = requests.post(OLLAMA_API, data=json.dumps(payload), headers=headers, timeout=30)
+        response = requests.post(OLLAMA_API, data=json.dumps(payload), headers=headers, timeout=120)
+
         logging.debug("Ollama API response status: %d", response.status_code)
         logging.debug("Ollama API response: %s", response.text)
         logging.debug("Ollama API request payload: %s", json.dumps(payload))
         logging.debug("Ollama API response: %s", response)
-        response.raise_for_status()
-        data = response.json()
+        logging.debug("Ollama API response: %s", response.text)
 
-        logging.debug("Raw response from Ollama:", data)  # Debugging line
-        ollama_response = OllamaResponse.model_validate(data)
-        substitute = ollama_response.message.get("content", "").strip()
-        return substitute if substitute else None
-    except Exception as e:
+        response.raise_for_status()
+        raw_data = response.json()
+
+        logging.debug("Raw response from Ollama: %s", raw_data)
+
+        ollama_response = OllamaResponse.model_validate(raw_data)
+
+        message = ollama_response.message
+
+        logging.debug("Message from Ollama: %s", message)
+
+        content_raw = message.content.strip()
+        # if content_raw.startswith("```"):
+        #     # Some models return fenced JSON blocks.
+        #     content_raw = content_raw.strip("`")
+        #     if content_raw.startswith("json"):
+        #         content_raw = content_raw[4:].strip()
+
+        content: Any = json.loads(content_raw)
+        # if not isinstance(content, dict):
+        #     raise ValueError("Ollama message content must be a JSON object")
+
+        logging.debug("Content from Ollama: %s", content)
+
+        # Merge model output onto the original recipe in case Ollama returns partial fields.
+        merged_recipe = recipe.model_dump()
+        merged_recipe.update(content)
+        modified_recipe_validated = Recipe.model_validate(merged_recipe)
+
+        logging.info("Substitute recipe generated for ingredient: %s", ingredient)
+
+        return modified_recipe_validated
+    except Exception:
         logging.exception("Error while finding substitute for ingredient: %s", ingredient)
         return None
 
@@ -107,10 +165,13 @@ if __name__ == "__main__":
             "strCreativeCommonsConfirmed": None,
             "dateModified": None
         }
+
     recipe = Recipe.model_validate(recipe_data)
 
     substitute = find_substitute(recipe, test_ingredient)
     if substitute:
+        logging.info("Substitute recipe found:")
+        logging.info(f"Substitute type: {type(substitute)}")
         logging.info(f"A good substitute for {test_ingredient} is: {substitute}")
     else:
         logging.info(f"No substitute found for {test_ingredient}.")
