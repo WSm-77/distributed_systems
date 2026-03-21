@@ -1,29 +1,42 @@
-from config.config import CONFIG
+import logging
+
 from data_models.meal import Meal
-from services.recipe_service import get_recipe
 from services.food_info_service import get_food_info
+from services.recipe_service import get_recipe
+
+logger = logging.getLogger(__name__)
 
 def get_meal(main_ingredient: str | None = None, ingredients_to_exclude: list[str] = [], area: str | None = None, category: str | None = None):
-    recipie = get_recipe(main_ingredient, ingredients_to_exclude, area, category)
+    logger.debug("Building meal object from recipe and nutrition sources")
+    recipe = get_recipe(main_ingredient, ingredients_to_exclude, area, category)
+
+    if recipe is None:
+        logger.error("Cannot build meal because no recipe matched input filters")
+        raise ValueError("Recipe not found for provided filters.")
 
     food_info = None
     try:
-        food_info = get_food_info(recipie.strMeal)
-    except Exception as e:
-        print(f"Error occurred while fetching food info for {recipie.strMeal}: {e}")
+        food_info = get_food_info(recipe.strMeal)
+    except Exception:
+        logger.exception("Failed to fetch food info for meal: %s", recipe.strMeal)
 
-    vitamines = set()
+    vitamines: set[str] = set()
     if food_info:
         vitamines = set(food_info.get_vitamin_nutrients())
+        logger.debug("Extracted %d vitamins for meal %s", len(vitamines), recipe.strMeal)
+    else:
+        logger.info("Proceeding without vitamin enrichment for %s", recipe.strMeal)
 
 
     meal = Meal(
-        strMeal=recipie.strMeal,
-        strCategory=recipie.strCategory,
-        strArea=recipie.strArea,
-        strInstructions=recipie.strInstructions,
-        ingredients=recipie.get_ingredients(),
-        vitamines=vitamines
+        strMeal=recipe.strMeal,
+        strCategory=recipe.strCategory,
+        strArea=recipe.strArea,
+        strInstructions=recipe.strInstructions,
+        ingredients=recipe.get_ingredients(),
+        vitamines=list(vitamines)
     )
+
+    logger.info("Meal created successfully: %s", meal.strMeal)
 
     return meal

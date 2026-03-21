@@ -1,19 +1,42 @@
-import requests
-from data_models.recipe import RecipeResponse, Recipe
-from config.config import CONFIG
-import random
 import json
+import logging
+import random
+
+import requests
+
+from config.config import CONFIG
+from data_models.recipe import Recipe, RecipeResponse
+
+logger = logging.getLogger(__name__)
 
 def get_random_recipies():
-    print(f"Config values: {CONFIG.food_data_central_api_key}, {CONFIG.the_meal_db_api_key}")
-    response = requests.get(f"https://www.themealdb.com/api/json/v1/{CONFIG.the_meal_db_api_key}/random.php")
+    logger.debug("Fetching random recipe from TheMealDB")
+    response = requests.get(
+        f"https://www.themealdb.com/api/json/v1/{CONFIG.the_meal_db_api_key}/random.php",
+        timeout=15,
+    )
+    response.raise_for_status()
+
     data = response.json()
     validated_recipe = RecipeResponse.model_validate(data)
+    recipe = validated_recipe.meals[0] if validated_recipe.meals else None
 
-    return validated_recipe.meals[0] if validated_recipe.meals else None
+    if recipe:
+        logger.info("Random recipe selected: %s", recipe.strMeal)
+    else:
+        logger.warning("TheMealDB returned no random recipe")
+
+    return recipe
 
 def get_recipe_by_id(meal_id: str) -> Recipe | None:
-    response = requests.get(f"https://www.themealdb.com/api/json/v1/{CONFIG.the_meal_db_api_key}/lookup.php?i={meal_id}")
+    logger.debug("Fetching recipe details for id=%s", meal_id)
+    response = requests.get(
+        f"https://www.themealdb.com/api/json/v1/{CONFIG.the_meal_db_api_key}/lookup.php",
+        params={"i": meal_id},
+        timeout=15,
+    )
+    response.raise_for_status()
+
     data = response.json()
     validated_recipe = RecipeResponse.model_validate(data)
 
@@ -28,32 +51,57 @@ def get_recipe(main_ingredient: str | None = None, ingredients_to_exclude: list[
     if category:
         params["c"] = category
 
-    print(f"Getting recipe with parameters: {params} and ingredients to exclude: {ingredients_to_exclude}")
+    logger.info(
+        "Fetching recipe (main_ingredient=%s, area=%s, category=%s, exclusions=%d)",
+        main_ingredient,
+        area,
+        category,
+        len(ingredients_to_exclude),
+    )
+    logger.debug("TheMealDB filter parameters: %s", params)
 
     if not params:
+        logger.info("No filters provided, using random recipe")
         return get_random_recipies()
 
     url = f"https://www.themealdb.com/api/json/v1/{CONFIG.the_meal_db_api_key}/filter.php"
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, timeout=15)
 
     if not response.ok:
-        print(f"Failed to fetch recipes from TheMealDB API. Status code: {response.status_code}, Response: {response.text}")
+        logger.error(
+            "Failed to fetch recipes from TheMealDB API (status=%s, body=%s)",
+            response.status_code,
+            response.text[:500],
+        )
         return None
 
     recipies = response.json()
-    print(f"Raw response from TheMealDB API: {json.dumps(recipies)}")
+    logger.debug("Raw response from TheMealDB API: %s", json.dumps(recipies)[:1000])
+
+    if not recipies.get("meals"):
+        logger.warning("No recipes returned for the provided filters")
+        return None
 
     random.shuffle(recipies["meals"])
+
+    normalized_exclusions = {
+        ingredient.strip().lower().rstrip("s") for ingredient in ingredients_to_exclude
+    }
 
     for meal in recipies["meals"]:
 
         recipe = get_recipe_by_id(meal["idMeal"])
 
+        if recipe is None:
+            logger.debug("Skipping meal id=%s due to missing detailed recipe", meal["idMeal"])
+            continue
+
         ingredient_names = set(map(lambda x: x.name.strip("s"), recipe.get_ingredients()))
 
-        if not any(ingredient_to_exclude in ingredient_names for ingredient_to_exclude in ingredients_to_exclude):
+        if not any(ingredient_to_exclude in ingredient_names for ingredient_to_exclude in normalized_exclusions):
+            logger.info("Selected filtered recipe: %s", recipe.strMeal)
             return recipe
 
-    print(f"No recipe found with the given criteria. Returning a random recipe.")
+    logger.info("No recipe remained after applying exclusions")
 
     return None
