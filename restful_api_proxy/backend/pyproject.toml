@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "backend"
 version = "0.1.0"
@@ -13,3 +17,9 @@ dependencies = [
     "requests>=2.32.5",
     "uvicorn>=0.42.0",
 ]
+
+[tool.uv]
+package = true
+
+[tool.setuptools.packages.find]
+include = ["config*", "services*", "data_models*"]
