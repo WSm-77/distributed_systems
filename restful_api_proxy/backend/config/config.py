@@ -13,6 +13,12 @@ class Settings(BaseSettings):
     the_meal_db_api_key: str
     max_meals_to_return: int = 3
     log_level: int = logging.INFO
+    ollama_api: str = "http://localhost:11434/api/chat"
+    model: str = "llama3.1:8b"
+    headers: dict[str, str] = {"Content-Type": "application/json"}
+    system_prompt: str = """
+    You are a helpful assistant that get's Recipe objects as an input and suggests substitutes for ingredients that the user wants to exclude. You should suggest substitutes that are as close as possible to the original ingredient in terms of taste and texture, and that would work well in the recipe. In the response, substitute the ingredient in the strIngredientX fields and the ingredient in the strInstructions field. Return recipe with all fields unchanged except the ones that need to be modified to replace the ingredient. If the ingredient to be replaced is not present in the recipe, return the original recipe without any modifications.
+    """.strip()
 
     @field_validator("log_level", mode="before")
     @classmethod
