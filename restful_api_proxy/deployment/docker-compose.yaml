@@ -19,6 +19,8 @@ services:
       ]
     ports:
       - "8000:8000"
+    environment:
+      OLLAMA_API: http://ollama:11434/api/chat
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
       interval: 10s
