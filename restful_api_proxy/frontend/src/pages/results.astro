@@ -1,10 +1,13 @@
 ---
 import "../styles/global.css";
 
+export const prerender = false;
+
 const apiBaseUrl = (import.meta.env.PUBLIC_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
 
-const pageUrl = new URL(Astro.request.url);
-const params = pageUrl.searchParams;
+const params = Astro.url.searchParams;
+
+console.info(params.toString() ? `[Meal Result] URL parameters: ${params.toString()}` : "[Meal Result] No URL parameters provided");
 
 const selectedMainIngredient = params.get("main_ingredient")?.trim() || "";
 const selectedCategory = params.get("category")?.trim() || "";
@@ -24,6 +27,16 @@ let requestFailed = false;
 let errorMessage = "";
 let meal = null;
 
+console.info("[Meal Result] Requesting backend meal", {
+  endpoint,
+  filters: {
+    main_ingredient: selectedMainIngredient,
+    category: selectedCategory,
+    area: selectedArea,
+    exclusions: selectedExclusions,
+  },
+});
+
 try {
   const response = await fetch(endpoint, {
     method: "GET",
@@ -31,17 +44,28 @@ try {
   });
 
   responseStatus = response.status;
+  console.info("[Meal Result] Backend response received", { status: responseStatus });
 
   if (!response.ok) {
     requestFailed = true;
     const errorPayload = await response.json().catch(() => ({}));
     errorMessage = errorPayload.message || errorPayload.error || "The backend request failed.";
+    console.error("[Meal Result] Backend request failed", {
+      status: response.status,
+      payload: errorPayload,
+    });
   } else {
     meal = await response.json();
+    console.debug("[Meal Result] Meal payload loaded", {
+      mealName: meal?.strMeal,
+      ingredientCount: Array.isArray(meal?.ingredients) ? meal.ingredients.length : 0,
+      vitaminCount: Array.isArray(meal?.vitamines) ? meal.vitamines.length : 0,
+    });
   }
 } catch (error) {
   requestFailed = true;
   errorMessage = error instanceof Error ? error.message : "Cannot reach backend API.";
+  console.error("[Meal Result] Fetch threw an exception", { error: errorMessage });
 }
 
 const hasMeal = Boolean(meal && meal.strMeal);

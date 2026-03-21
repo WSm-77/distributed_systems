@@ -58,6 +58,7 @@ import "../styles/global.css";
       const formError = document.querySelector("#form-error");
 
       form?.addEventListener("submit", (event) => {
+        console.info("[Meal Finder] Submit triggered");
         event.preventDefault();
 
         if (!(form instanceof HTMLFormElement)) return;
@@ -80,6 +81,11 @@ import "../styles/global.css";
         addTrimmed("main_ingredient", data.get("main_ingredient"));
         addTrimmed("category", data.get("category"));
         addTrimmed("area", data.get("area"));
+        console.debug("[Meal Finder] Base filters prepared", {
+          main_ingredient: String(data.get("main_ingredient") ?? "").trim(),
+          category: String(data.get("category") ?? "").trim(),
+          area: String(data.get("area") ?? "").trim(),
+        });
 
         const rawExclusions = String(data.get("ingredients_to_exclude_input") ?? "").trim();
         if (rawExclusions.length > 0) {
@@ -93,13 +99,19 @@ import "../styles/global.css";
               formError.hidden = false;
               formError.textContent = "Ingredients to exclude are invalid. Use comma-separated words.";
             }
+            console.warn("[Meal Finder] Invalid exclusions input", { rawExclusions });
             return;
           }
 
           exclusions.forEach((value) => query.append("ingredients_to_exclude", value));
+          console.debug("[Meal Finder] Exclusions parsed", { exclusions });
         }
 
         const destination = query.toString().length > 0 ? `/results?${query.toString()}` : "/results";
+        console.info("[Meal Finder] Redirecting to results", {
+          destination,
+          query: query.toString(),
+        });
         window.location.assign(destination);
       });
     </script>
