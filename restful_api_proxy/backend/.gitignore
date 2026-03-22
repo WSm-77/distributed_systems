@@ -2,9 +2,6 @@
 .venv/
 __pycache__/
 
-# environment variables
-.env*
-
 # build
 backend.egg-info/
 

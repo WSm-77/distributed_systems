@@ -1,3 +1,7 @@
 .github/
 resources/
 *.json
+
+# Local environment variables
+.env*
+!.env.example

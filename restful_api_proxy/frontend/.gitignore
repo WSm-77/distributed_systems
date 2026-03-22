@@ -4,7 +4,3 @@ node_modules/
 .netlify/
 dist/
 !*.json
-
-# Local environment variables
-.env*
-!.env.example
