@@ -1,0 +1,190 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap");
+
+:root {
+  --bg: #f4efe5;
+  --bg-accent: radial-gradient(circle at 10% 10%, #ffd9b8 0%, transparent 35%),
+    radial-gradient(circle at 90% 5%, #b6e6d4 0%, transparent 30%),
+    linear-gradient(180deg, #f4efe5 0%, #f1f7fc 100%);
+  --surface: rgba(255, 255, 255, 0.84);
+  --surface-strong: #ffffff;
+  --text: #1c2431;
+  --muted: #5a6474;
+  --line: #d7dfeb;
+  --cta: #0f7b6c;
+  --cta-strong: #0b6256;
+  --danger: #9e2a2b;
+  --ok: #14532d;
+  --shadow: 0 20px 50px rgba(20, 30, 48, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--text);
+  background: var(--bg-accent);
+}
+
+main {
+  width: min(980px, 92vw);
+  margin: 2rem auto 4rem;
+}
+
+.hero {
+  margin-bottom: 1.4rem;
+}
+
+.hero h1 {
+  font-family: "Fraunces", serif;
+  letter-spacing: 0.02em;
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.hero p {
+  color: var(--muted);
+  max-width: 70ch;
+}
+
+.card {
+  background: var(--surface);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 1.2rem;
+}
+
+label {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+input,
+select,
+textarea {
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+}
+
+button,
+a.button {
+  border: 0;
+  border-radius: 12px;
+  background: var(--cta);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+button:hover,
+a.button:hover {
+  transform: translateY(-1px);
+  background: var(--cta-strong);
+}
+
+.grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+@media (min-width: 760px) {
+  .grid.two {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.inline-note {
+  margin-top: 0.3rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.alert {
+  border-radius: 12px;
+  border: 1px solid transparent;
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 0.9rem;
+}
+
+.alert.error {
+  border-color: #f0b8b8;
+  background: #fff2f2;
+  color: var(--danger);
+}
+
+.alert.ok {
+  border-color: #bfe5cf;
+  background: #f0fbf3;
+  color: var(--ok);
+}
+
+.meta {
+  margin: 0;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ingredient-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.instructions {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.top-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero,
+  .card {
+    animation: rise-in 500ms ease both;
+  }
+
+  .card {
+    animation-delay: 80ms;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

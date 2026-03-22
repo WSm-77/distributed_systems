@@ -1,0 +1,6 @@
+# Ignore node modules and build artifacts
+node_modules/
+.astro/
+.netlify/
+dist/
+!*.json

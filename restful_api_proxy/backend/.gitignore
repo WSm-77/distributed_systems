@@ -1,0 +1,9 @@
+# virtual environment
+.venv/
+__pycache__/
+
+# build
+backend.egg-info/
+
+# database
+*.db
