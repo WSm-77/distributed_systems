@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     food_data_central_api_key: str
     the_meal_db_api_key: str
     max_meals_to_return: int = 3
+    rate_limit_storage_uri: str = "redis://redis:6379"
     log_level: int = logging.INFO
     ollama_api: str = "http://localhost:11434/api/chat"
     model: str = "llama3.1:8b"

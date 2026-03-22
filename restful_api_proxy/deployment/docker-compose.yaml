@@ -21,12 +21,18 @@ services:
       - "8000:8000"
     environment:
       OLLAMA_API: http://ollama:11434/api/chat
+      RATE_LIMIT_STORAGE_URI: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
+    networks:
+      - restful-api-proxy-net
 
   frontend:
     build:
@@ -47,6 +53,8 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    networks:
+      - restful-api-proxy-net
 
   ollama:
     image: ollama/ollama:latest
@@ -65,6 +73,27 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+    networks:
+      - restful-api-proxy-net
+
+  redis:
+    image: redis:alpine
+    container_name: redis_db
+    command: redis-server --appendonly yes
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+    restart: always
+    networks:
+      - restful-api-proxy-net
+
 volumes:
   ollama_data:
     name: ollama_data
+  redis_data:
+    name: redis_data
+
+networks:
+  restful-api-proxy-net:
+    driver: bridge

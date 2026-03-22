@@ -1,20 +1,35 @@
 import logging
 
-from fastapi import FastAPI, Query, status
+from fastapi import FastAPI, Query, Request, status
 from fastapi.responses import JSONResponse
+
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from config.logging_config import setup_logging
 from services.food_info_service import get_food_info
 from services.meal_service import get_meal
 from services.recipe_service import get_recipe
+from config.config import CONFIG
 
 setup_logging()
 logger = logging.getLogger(__name__)
 
 server = FastAPI()
 
+limiter = Limiter(
+    key_func=get_remote_address,
+    storage_uri=CONFIG.rate_limit_storage_uri,
+)
+
+server.state.limiter = limiter
+server.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 @server.get("/v1/recipe")
+@limiter.limit("5/minute")
 async def get_recipe_api(
+    request: Request,
     main_ingredient: str | None = None,
     ingredients_to_exclude: list[str] = Query(default_factory=list),
     area: str | None = None,
@@ -43,7 +58,8 @@ async def get_recipe_api(
         return JSONResponse(content={"error": "Internal server error"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @server.get("/v1/food_info")
-async def get_food_info_api(food_name: str):
+@limiter.limit("5/minute")
+async def get_food_info_api(request: Request, food_name: str):
     logger.info("GET /v1/food_info called (food_name=%s)", food_name)
     try:
         food = await get_food_info(food_name)
@@ -61,7 +77,9 @@ async def get_food_info_api(food_name: str):
         return JSONResponse(content={"error": "Internal server error"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @server.get("/v1/meal")
+@limiter.limit("5/minute")
 async def get_meal_api(
+    request: Request,
     main_ingredient: str | None = None,
     ingredients_to_exclude: list[str] = Query(default_factory=list),
     area: str | None = None,
