@@ -1,20 +1,25 @@
-FROM python:3.12 AS runtime
+FROM python:3.12-slim AS base
 WORKDIR /app
 
-COPY . .
+COPY ./pyproject.toml ./uv.lock ./
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+	&& rm -rf /var/lib/apt/lists/*
 
-RUN apt update && apt install -y curl
-
-# Download the latest installer
+# Install uv in builder stage.
 ADD https://astral.sh/uv/install.sh /uv-installer.sh
 
 # Run the installer then remove it
 RUN sh /uv-installer.sh && rm /uv-installer.sh
+ENV PATH="/root/.local/bin:${PATH}"
 
-# Ensure the installed binary is on the `PATH`
-ENV PATH="/root/.local/bin/:$PATH"
+FROM base AS builder
+RUN uv sync --frozen --no-dev
 
-RUN uv sync
+
+FROM base AS runtime
+COPY --from=builder /app/.venv /app/.venv
+COPY ./ ./
 
 ENV HOST=0.0.0.0
 ENV PORT=8000
