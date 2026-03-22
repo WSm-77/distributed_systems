@@ -83,15 +83,9 @@ const vitamins = hasMeal && Array.isArray(meal.vitamines) ? meal.vitamines : [];
     <main>
       <section class="hero">
         <h1>Meal Result</h1>
-        <p>Generated from backend response using your selected filters.</p>
       </section>
 
       <section class="card">
-        <p class="meta">
-          <span>Backend: {apiBaseUrl}</span>
-          <span>Status: {responseStatus || "n/a"}</span>
-        </p>
-
         {requestFailed && (
           <div class="alert error">
             <strong>Request failed.</strong>
