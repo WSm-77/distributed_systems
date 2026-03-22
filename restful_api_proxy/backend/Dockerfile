@@ -13,13 +13,20 @@ ADD https://astral.sh/uv/install.sh /uv-installer.sh
 RUN sh /uv-installer.sh && rm /uv-installer.sh
 ENV PATH="/root/.local/bin:${PATH}"
 
-FROM base AS builder
+FROM base AS env_builder
 RUN uv sync --frozen --no-dev
 
+FROM base AS builder
+COPY --from=env_builder /app/.venv /app/.venv
+COPY ./ ./
+RUN uv run python -c \
+    'from data_models.api_user import ApiUser; \
+     from db.db import init_db; \
+     init_db()'
 
 FROM base AS runtime
 COPY --from=builder /app/.venv /app/.venv
-COPY ./ ./
+COPY --from=builder /app/ ./
 
 ENV HOST=0.0.0.0
 ENV PORT=8000

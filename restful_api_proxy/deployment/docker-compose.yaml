@@ -22,6 +22,10 @@ services:
     environment:
       OLLAMA_API: http://ollama:11434/api/chat
       RATE_LIMIT_STORAGE_URI: redis://redis:6379
+      DATABASE_URL: sqlite:////data/auth.db
+      API_KEY_PEPPER: dev_pepper
+    volumes:
+      - auth_db_data:/data
     depends_on:
       redis:
         condition: service_started
@@ -93,6 +97,8 @@ volumes:
     name: ollama_data
   redis_data:
     name: redis_data
+  auth_db_data:
+    name: auth_db_data
 
 networks:
   restful-api-proxy-net:
