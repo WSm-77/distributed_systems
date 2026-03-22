@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import FastAPI, Query, Request, status
+from fastapi import FastAPI, Query, Request, status, Depends
 from fastapi.responses import JSONResponse
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -11,6 +11,8 @@ from config.logging_config import setup_logging
 from services.food_info_service import get_food_info
 from services.meal_service import get_meal
 from services.recipe_service import get_recipe
+from auth.auth import handle_api_key
+from data_models.api_user import ApiUser
 from config.config import CONFIG
 
 setup_logging()
@@ -30,6 +32,7 @@ server.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 @limiter.limit("5/minute")
 async def get_recipe_api(
     request: Request,
+    api_user: ApiUser = Depends(handle_api_key),
     main_ingredient: str | None = None,
     ingredients_to_exclude: list[str] = Query(default_factory=list),
     area: str | None = None,
@@ -59,7 +62,7 @@ async def get_recipe_api(
 
 @server.get("/v1/food_info")
 @limiter.limit("5/minute")
-async def get_food_info_api(request: Request, food_name: str):
+async def get_food_info_api(request: Request, food_name: str, api_user: ApiUser = Depends(handle_api_key)):
     logger.info("GET /v1/food_info called (food_name=%s)", food_name)
     try:
         food = await get_food_info(food_name)
@@ -80,6 +83,7 @@ async def get_food_info_api(request: Request, food_name: str):
 @limiter.limit("5/minute")
 async def get_meal_api(
     request: Request,
+    api_user: ApiUser = Depends(handle_api_key),
     main_ingredient: str | None = None,
     ingredients_to_exclude: list[str] = Query(default_factory=list),
     area: str | None = None,

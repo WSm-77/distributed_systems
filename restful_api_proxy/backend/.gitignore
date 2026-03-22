@@ -7,3 +7,6 @@ __pycache__/
 
 # build
 backend.egg-info/
+
+# database
+*.db

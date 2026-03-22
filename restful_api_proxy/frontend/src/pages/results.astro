@@ -4,7 +4,7 @@ import "../styles/global.css";
 export const prerender = false;
 
 const apiBaseUrl = (import.meta.env.PUBLIC_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
-
+const backendApiKey = import.meta.env.BACKEND_API_KEY || "";
 const params = Astro.url.searchParams;
 
 console.info(params.toString() ? `[Meal Result] URL parameters: ${params.toString()}` : "[Meal Result] No URL parameters provided");
@@ -40,7 +40,10 @@ console.info("[Meal Result] Requesting backend meal", {
 try {
   const response = await fetch(endpoint, {
     method: "GET",
-    headers: { "Accept": "application/json" }
+    headers: {
+      "Accept": "application/json",
+      "X-API-Key": backendApiKey
+    }
   });
 
   responseStatus = response.status;
@@ -49,9 +52,9 @@ try {
   if (!response.ok) {
     requestFailed = true;
     const errorPayload = await response.json().catch(() => ({}));
-    errorMessage = errorPayload.message || errorPayload.error || "The backend request failed.";
+    errorMessage = errorPayload.detail || errorPayload.error || "The backend request failed.";
     console.error("[Meal Result] Backend request failed", {
-      status: response.status,
+      status: responseStatus,
       payload: errorPayload,
     });
   } else {
@@ -88,7 +91,7 @@ const vitamins = hasMeal && Array.isArray(meal.vitamines) ? meal.vitamines : [];
       <section class="card">
         {requestFailed && (
           <div class="alert error">
-            <strong>Request failed.</strong>
+            <strong>{responseStatus} Request failed.</strong>
             <div>{errorMessage}</div>
           </div>
         )}

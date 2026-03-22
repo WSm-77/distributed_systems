@@ -11,6 +11,8 @@ load_dotenv(ENV_PATH)
 class Settings(BaseSettings):
     food_data_central_api_key: str
     the_meal_db_api_key: str
+    database_url: str = "sqlite:///./auth.db"
+    api_key_pepper: str = "dev_pepper"
     max_meals_to_return: int = 3
     rate_limit_storage_uri: str = "redis://redis:6379"
     log_level: int = logging.INFO

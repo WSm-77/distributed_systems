@@ -18,6 +18,7 @@ dependencies = [
     "redis>=7.3.0",
     "requests>=2.32.5",
     "slowapi>=0.1.9",
+    "sqlmodel>=0.0.37",
     "uvicorn>=0.42.0",
 ]
 
@@ -25,4 +26,4 @@ dependencies = [
 package = true
 
 [tool.setuptools.packages.find]
-include = ["config*", "services*", "data_models*"]
+include = ["config*", "services*", "data_models*", "db*", "auth*"]
