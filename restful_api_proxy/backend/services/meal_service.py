@@ -6,9 +6,14 @@ from services.recipe_service import get_recipe
 
 logger = logging.getLogger(__name__)
 
-def get_meal(main_ingredient: str | None = None, ingredients_to_exclude: list[str] = [], area: str | None = None, category: str | None = None):
+async def get_meal(
+    main_ingredient: str | None = None,
+    ingredients_to_exclude: list[str] | None = None,
+    area: str | None = None,
+    category: str | None = None,
+) -> Meal:
     logger.debug("Building meal object from recipe and nutrition sources")
-    recipe = get_recipe(main_ingredient, ingredients_to_exclude, area, category)
+    recipe = await get_recipe(main_ingredient, ingredients_to_exclude, area, category)
 
     if recipe is None:
         logger.error("Cannot build meal because no recipe matched input filters")
@@ -16,7 +21,7 @@ def get_meal(main_ingredient: str | None = None, ingredients_to_exclude: list[st
 
     food_info = None
     try:
-        food_info = get_food_info(recipe.strMeal)
+        food_info = await get_food_info(recipe.strMeal)
     except Exception:
         logger.exception("Failed to fetch food info for meal: %s", recipe.strMeal)
 

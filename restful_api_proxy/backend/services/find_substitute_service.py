@@ -1,4 +1,4 @@
-import json, logging, requests
+import json, logging, httpx
 from data_models.recipe import Recipe
 from config.config import CONFIG
 from data_models.ollama import OllamaResponse
@@ -12,7 +12,7 @@ recipe_field_names = list(
     )
 )
 
-def find_substitute(recipe: Recipe, ingredients: list[str]) -> Recipe | None:
+async def find_substitute(recipe: Recipe, ingredients: list[str]) -> Recipe | None:
     ingredients_str = ", ".join(ingredients)
 
     logging.info("Finding substitute for ingredients: %s in recipe: %s", ingredients_str, recipe.strMeal)
@@ -32,7 +32,8 @@ def find_substitute(recipe: Recipe, ingredients: list[str]) -> Recipe | None:
     }
 
     try:
-        response = requests.post(CONFIG.ollama_api, data=json.dumps(payload), headers=CONFIG.headers, timeout=120)
+        async with httpx.AsyncClient(timeout=120) as client:
+            response = await client.post(CONFIG.ollama_api, json=payload, headers=CONFIG.headers)
 
         logging.debug("Ollama API response status: %d", response.status_code)
         logging.debug("Ollama API response: %s", response.text)

@@ -1,24 +1,24 @@
 import logging
 
-import requests
+import httpx
 
 from config.config import CONFIG
 from data_models.food_info import FoodInfo, FoodInfoResponse
 
 logger = logging.getLogger(__name__)
 
-def get_food_info(food_name: str) -> FoodInfo | None:
+async def get_food_info(food_name: str) -> FoodInfo | None:
     logger.debug("Fetching food info from USDA for query: %s", food_name)
-    response = requests.get(
-        "https://api.nal.usda.gov/fdc/v1/foods/search",
-        params={
-            "query": food_name,
-            "pageSize": 5,
-            "adataType": "SR Legacy",
-            "api_key": CONFIG.food_data_central_api_key,
-        },
-        timeout=15,
-    )
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await client.get(
+            "https://api.nal.usda.gov/fdc/v1/foods/search",
+            params={
+                "query": food_name,
+                "pageSize": 5,
+                "adataType": "SR Legacy",
+                "api_key": CONFIG.food_data_central_api_key,
+            },
+        )
     response.raise_for_status()
 
     logger.debug("USDA response size: %d chars", len(response.text))

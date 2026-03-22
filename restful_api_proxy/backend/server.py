@@ -28,7 +28,7 @@ async def get_recipe_api(
         len(ingredients_to_exclude),
     )
     try:
-        recipe = get_recipe(main_ingredient, ingredients_to_exclude, area, category)
+        recipe = await get_recipe(main_ingredient, ingredients_to_exclude, area, category)
 
         if not recipe:
             logger.warning("No recipe found for the provided filters")
@@ -46,7 +46,7 @@ async def get_recipe_api(
 async def get_food_info_api(food_name: str):
     logger.info("GET /v1/food_info called (food_name=%s)", food_name)
     try:
-        food = get_food_info(food_name)
+        food = await get_food_info(food_name)
 
         if food is None:
             logger.warning("No food info found for query: %s", food_name)
@@ -75,7 +75,7 @@ async def get_meal_api(
         len(ingredients_to_exclude),
     )
     try:
-        meal = get_meal(main_ingredient, ingredients_to_exclude, area, category)
+        meal = await get_meal(main_ingredient, ingredients_to_exclude, area, category)
         logger.info("Meal assembled: %s", meal.strMeal)
 
         return JSONResponse(content=meal.model_dump(), status_code=status.HTTP_200_OK)
