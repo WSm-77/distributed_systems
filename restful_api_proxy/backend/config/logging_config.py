@@ -10,7 +10,6 @@ def setup_logging() -> None:
 
     root_logger = logging.getLogger()
 
-    # Avoid duplicate handlers during autoreload while keeping level configurable.
     if root_logger.handlers:
         root_logger.setLevel(level)
         for handler in root_logger.handlers:
