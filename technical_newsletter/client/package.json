@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "generate:proto": "grpc_tools_node_protoc --proto_path=../proto --js_out=import_style=commonjs,binary:src/generated --grpc_out=grpc_js:src/generated --plugin=protoc-gen-grpc=./node_modules/.bin/grpc_tools_node_protoc_plugin ../proto/event.proto",
+    "subscribe": "ts-node --project tsconfig.cli.json src/cli/subscribe.ts",
+    "type-check": "tsc --project tsconfig.cli.json --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,10 +14,12 @@
   "license": "ISC",
   "dependencies": {
     "@grpc/grpc-js": "^1.14.3",
-    "@grpc/proto-loader": "^0.8.0"
+    "@grpc/proto-loader": "^0.8.0",
+    "google-protobuf": "^4.0.2"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
+    "grpc-tools": "^1.13.1",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
   }
