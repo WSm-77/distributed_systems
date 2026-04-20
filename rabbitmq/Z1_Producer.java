@@ -26,6 +26,7 @@ public class Z1_Producer {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String message = br.readLine();
 
+
         channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
         System.out.println("Sent: " + message);
 

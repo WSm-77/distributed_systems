@@ -30,12 +30,13 @@ public class Z1_Consumer {
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 String message = new String(body, "UTF-8");
                 System.out.println("Received: " + message);
+                channel.basicAck(envelope.getDeliveryTag(), false);
             }
         };
 
         // start listening
         System.out.println("Waiting for messages...");
-        channel.basicConsume(QUEUE_NAME, true, consumer);
+        channel.basicConsume(QUEUE_NAME, false, consumer);
 
         // close
 //        channel.close();
