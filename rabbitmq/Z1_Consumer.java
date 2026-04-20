@@ -23,6 +23,7 @@ public class Z1_Consumer {
         // queue
         String QUEUE_NAME = "queue1";
         channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+        channel.basicQos(1);
 
         // consumer (handle msg)
         Consumer consumer = new DefaultConsumer(channel) {
@@ -31,6 +32,12 @@ public class Z1_Consumer {
                 String message = new String(body, "UTF-8");
                 System.out.println("Received: " + message);
                 channel.basicAck(envelope.getDeliveryTag(), false);
+                int timeToSleep = Integer.parseInt(message);
+                try {
+                    Thread.sleep(timeToSleep * 1000);
+                } catch(Exception e) {
+                    System.out.println(e.getMessage());
+                }
             }
         };
 
@@ -39,7 +46,7 @@ public class Z1_Consumer {
         channel.basicConsume(QUEUE_NAME, false, consumer);
 
         // close
-//        channel.close();
-//        connection.close();
+       channel.close();
+       connection.close();
     }
 }
