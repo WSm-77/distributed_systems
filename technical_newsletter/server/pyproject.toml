@@ -1,10 +1,13 @@
 [project]
-name = "backend"
+name = "server"
 version = "0.1.0"
-description = "Add your description here"
+description = "A gRPC server for the technical newsletter application."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "grpcio>=1.80.0",
+    "grpcio-tools>=1.80.0",
+]
 
 [project.scripts]
 app = "src.app.app:main"

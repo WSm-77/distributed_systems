@@ -10,3 +10,7 @@
 /database/csv
 
 __pycache__/
+
+# protoc
+src/generated/*
+!.gitkeep
