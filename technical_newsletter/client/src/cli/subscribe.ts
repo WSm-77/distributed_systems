@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import grpc from "@grpc/grpc-js";
+import * as grpc from "@grpc/grpc-js";
 import { parseArgs, printUsage } from "./args";
 import { parseEnumList, invertMap } from "./enums";
 import { formatEvent } from "./format";
