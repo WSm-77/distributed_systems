@@ -1,0 +1,12 @@
+# virtual environment
+.venv/
+
+# distribution/build artifacts
+*.egg-info/
+
+# ruff
+.ruff_cache/
+
+/database/csv
+
+__pycache__/
