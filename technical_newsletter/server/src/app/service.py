@@ -28,6 +28,11 @@ class NotificationService(event_pb2_grpc.NotificationServiceServicer):
         )
 
         with self._lock:
+            if request.client_id in self._subscribers:
+                context.set_code(grpc.StatusCode.ALREADY_EXISTS)
+                context.set_details(f"Client ID '{request.client_id}' is already subscribed")
+                raise grpc.RpcError("Client ID already subscribed")
+
             self._subscribers[request.client_id] = state
 
         logging.info("Client subscribed: %s", request.client_id)
@@ -68,6 +73,7 @@ class NotificationService(event_pb2_grpc.NotificationServiceServicer):
         context: grpc.ServicerContext,
     ) -> event_pb2.SubscriptionFiltersResponse:
         del context
+        logging.info(f"Adding filters for client {request.client_id}: categories={request.categories}, skill_levels={request.skill_level}")
         with self._lock:
             current_state = self._subscribers.get(request.client_id)
             if current_state is None:
@@ -98,6 +104,7 @@ class NotificationService(event_pb2_grpc.NotificationServiceServicer):
         request: event_pb2.RemoveSubscriptionFiltersRequest,
         context: grpc.ServicerContext,
     ) -> event_pb2.SubscriptionFiltersResponse:
+        logging.info(f"Removing filters for client {request.client_id}: categories={request.categories}, skill_levels={request.skill_level}")
         del context
         with self._lock:
             current_state = self._subscribers.get(request.client_id)
@@ -128,8 +135,8 @@ class NotificationService(event_pb2_grpc.NotificationServiceServicer):
         with self._lock:
             subscribers = list(self._subscribers.values())
 
-        logging.info(f"Publishing event '{event.title}' to {len(subscribers)} subscribers")
-
+        logging.info(f"Publishing event '{event.title}'")
+        logging.info(f"Event details: category={event_pb2.EventType.Name(event.category)}, skill_level={event_pb2.SkillLevel.Name(event.skill_level)}")
         for subscriber in subscribers:
             if not subscriber.active:
                 continue
