@@ -99,7 +99,7 @@ uv run app
 
 2) Start a subscriber (in another shell)
 ```bash
-npm --prefix client run subscribe -- --client-id alice --events WORKSHOP --skills BEGINNER,INTERMEDIATE
+npm run subscribe -- --client-id alice --events WORKSHOP --skills BEGINNER,INTERMEDIATE
 ```
 
 Subscriber console (trimmed):
@@ -110,7 +110,7 @@ Received event: { id: 'evt-0001', title: 'Intro to Webhooks', category: 'WORKSHO
 
 3) While the subscriber stream is active, add a category:
 ```bash
-npm --prefix client run add-subscriptions -- --client-id alice --events CONFERENCE
+npm run add-subscriptions -- --client-id alice --events CONFERENCE
 ```
 
 CLI output (trimmed):
@@ -131,7 +131,7 @@ Received event: { id: 'evt-0002', title: 'Cloud Conference 2026', category: 'CON
 
 Example 2 — remove subscriptions:
 ```bash
-npm --prefix client run remove-subscriptions -- --client-id alice --events WORKSHOP
+npm run remove-subscriptions -- --client-id alice --events WORKSHOP
 ```
 
 Output (trimmed):
@@ -147,7 +147,7 @@ Remove-subscriptions result: {
 
 Example 3 — mutation against an unknown client
 ```bash
-npm --prefix client run add-subscriptions -- --client-id unknown-client --events HACKATHON
+npm run add-subscriptions -- --client-id unknown-client --events HACKATHON
 ```
 
 Output (trimmed):
