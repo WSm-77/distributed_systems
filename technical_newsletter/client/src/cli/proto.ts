@@ -15,21 +15,55 @@ export interface SubscriptionRequestMessage {
   setSkillLevelList(skillLevels: number[]): void;
 }
 
-export interface UnsubscriptionRequestMessage {
+export interface UnsubscribeRequestMessage {
   setClientId(clientId: string): void;
 }
 
-export interface UnsubscriptionResponseMessage {
+export interface AddSubscriptionFiltersRequestMessage {
+  setClientId(clientId: string): void;
+  setCategoriesList(categories: number[]): void;
+  setSkillLevelList(skillLevels: number[]): void;
+}
+
+export interface RemoveSubscriptionFiltersRequestMessage {
+  setClientId(clientId: string): void;
+  setCategoriesList(categories: number[]): void;
+  setSkillLevelList(skillLevels: number[]): void;
+}
+
+export interface UnsubscribeResponseMessage {
   getSuccess(): boolean;
+}
+
+export interface SubscriptionFiltersResponseMessage {
+  getSuccess(): boolean;
+  getClientId(): string;
+  getCategoriesList(): string[];
+  getSkillLevelList(): string[];
+  getMessage(): string;
 }
 
 export interface NotificationServiceClient {
   subscribe(request: SubscriptionRequestMessage): grpc.ClientReadableStream<EventMessage>;
   unsubscribe(
-    request: UnsubscriptionRequestMessage,
+    request: UnsubscribeRequestMessage,
     callback: (
       error: grpc.ServiceError | null,
-      response: UnsubscriptionResponseMessage,
+      response: UnsubscribeResponseMessage,
+    ) => void,
+  ): void;
+  addSubscriptionFilters(
+    request: AddSubscriptionFiltersRequestMessage,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: SubscriptionFiltersResponseMessage,
+    ) => void,
+  ): void;
+  removeSubscriptionFilters(
+    request: RemoveSubscriptionFiltersRequestMessage,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: SubscriptionFiltersResponseMessage,
     ) => void,
   ): void;
   close(): void;
@@ -39,7 +73,9 @@ interface EventPbModule {
   EventType: Record<string, number>;
   SkillLevel: Record<string, number>;
   SubscriptionRequest: new () => SubscriptionRequestMessage;
-  UnsubscriptionRequest: new () => UnsubscriptionRequestMessage;
+  UnsubscribeRequest: new () => UnsubscribeRequestMessage;
+  AddSubscriptionFiltersRequest: new () => AddSubscriptionFiltersRequestMessage;
+  RemoveSubscriptionFiltersRequest: new () => RemoveSubscriptionFiltersRequestMessage;
 }
 
 interface EventGrpcPbModule {
@@ -56,5 +92,7 @@ export const eventTypes = eventPb.EventType;
 export const skillLevels = eventPb.SkillLevel;
 
 export const SubscriptionRequest = eventPb.SubscriptionRequest;
-export const UnsubscriptionRequest = eventPb.UnsubscriptionRequest;
+export const UnsubscribeRequest = eventPb.UnsubscribeRequest;
+export const AddSubscriptionFiltersRequest = eventPb.AddSubscriptionFiltersRequest;
+export const RemoveSubscriptionFiltersRequest = eventPb.RemoveSubscriptionFiltersRequest;
 export const NotificationServiceClient = eventGrpcPb.NotificationServiceClient;

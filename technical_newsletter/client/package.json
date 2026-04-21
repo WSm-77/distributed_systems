@@ -6,6 +6,8 @@
   "scripts": {
     "generate:proto": "grpc_tools_node_protoc --proto_path=../proto --js_out=import_style=commonjs,binary:src/generated --grpc_out=grpc_js:src/generated --plugin=protoc-gen-grpc=./node_modules/.bin/grpc_tools_node_protoc_plugin ../proto/event.proto",
     "subscribe": "ts-node --project tsconfig.cli.json src/cli/subscribe.ts",
+    "add-subscriptions": "ts-node --project tsconfig.cli.json src/cli/add-subscriptions.ts",
+    "remove-subscriptions": "ts-node --project tsconfig.cli.json src/cli/remove-subscriptions.ts",
     "type-check": "tsc --project tsconfig.cli.json --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

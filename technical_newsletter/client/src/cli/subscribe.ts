@@ -9,7 +9,7 @@ import {
   skillLevels,
   NotificationServiceClient,
   SubscriptionRequest,
-  UnsubscriptionRequest,
+  UnsubscribeRequest,
 } from "./proto";
 
 function getErrorMessage(error: unknown): string {
@@ -94,7 +94,7 @@ function run(): void {
 
     console.log("Unsubscribing...");
 
-    const unsubscribeRequest = new UnsubscriptionRequest();
+    const unsubscribeRequest = new UnsubscribeRequest();
     unsubscribeRequest.setClientId(args.clientId);
 
     client.unsubscribe(unsubscribeRequest, (error, response) => {
