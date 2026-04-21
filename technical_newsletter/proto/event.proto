@@ -35,15 +35,41 @@ message SubscriptionRequest {
     repeated EventType categories = 3;
 }
 
-message UnsubscriptionRequest {
+message UnsubscribeRequest {
     string client_id = 1;
+    repeated SkillLevel skill_level = 2;
+    repeated EventType categories = 3;
 }
 
-message UnsubscriptionResponse {
+
+message UnsubscribeResponse {
+    bool success = 1;
+}
+
+
+message RemoveSubscriptionRequest {
+    string client_id = 1;
+    repeated SkillLevel skill_level = 2;
+    repeated EventType categories = 3;
+}
+
+message RemoveSubscriptionResponse {
+    bool success = 1;
+}
+
+message AddSubscriptionsRequest {
+    string client_id = 1;
+    repeated SkillLevel skill_level = 2;
+    repeated EventType categories = 3;
+}
+
+message AddSubscriptionsResponse {
     bool success = 1;
 }
 
 service NotificationService {
     rpc Subscribe(SubscriptionRequest) returns (stream Event);
-    rpc Unsubscribe(UnsubscriptionRequest) returns (UnsubscriptionResponse);
+    rpc Unsubscribe(UnsubscribeRequest) returns (UnsubscribeResponse);
+    rpc RemoveSubscription(RemoveSubscriptionRequest) returns (RemoveSubscriptionResponse);
+    rpc AddSubscriptions(AddSubscriptionsRequest) returns (AddSubscriptionsResponse);
 }
