@@ -1,0 +1,12 @@
+[project]
+name = "server"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "zeroc-ice>=3.8.1",
+]
+
+[tool.uv.extra-build-dependencies]
+zeroc-ice = ["setuptools"]
