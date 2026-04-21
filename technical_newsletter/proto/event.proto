@@ -37,8 +37,6 @@ message SubscriptionRequest {
 
 message UnsubscribeRequest {
     string client_id = 1;
-    repeated SkillLevel skill_level = 2;
-    repeated EventType categories = 3;
 }
 
 
@@ -47,29 +45,29 @@ message UnsubscribeResponse {
 }
 
 
-message RemoveSubscriptionRequest {
+message AddSubscriptionFiltersRequest {
     string client_id = 1;
     repeated SkillLevel skill_level = 2;
     repeated EventType categories = 3;
 }
 
-message RemoveSubscriptionResponse {
-    bool success = 1;
-}
-
-message AddSubscriptionsRequest {
+message RemoveSubscriptionFiltersRequest {
     string client_id = 1;
     repeated SkillLevel skill_level = 2;
     repeated EventType categories = 3;
 }
 
-message AddSubscriptionsResponse {
+message SubscriptionFiltersResponse {
     bool success = 1;
+    string client_id = 2;
+    repeated string skill_level = 3;
+    repeated string categories = 4;
+    string message = 5;
 }
 
 service NotificationService {
     rpc Subscribe(SubscriptionRequest) returns (stream Event);
     rpc Unsubscribe(UnsubscribeRequest) returns (UnsubscribeResponse);
-    rpc RemoveSubscription(RemoveSubscriptionRequest) returns (RemoveSubscriptionResponse);
-    rpc AddSubscriptions(AddSubscriptionsRequest) returns (AddSubscriptionsResponse);
+    rpc AddSubscriptionFilters(AddSubscriptionFiltersRequest) returns (SubscriptionFiltersResponse);
+    rpc RemoveSubscriptionFilters(RemoveSubscriptionFiltersRequest) returns (SubscriptionFiltersResponse);
 }
