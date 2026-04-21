@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import threading
 import uuid
 
@@ -29,6 +30,7 @@ def build_demo_event(index: int) -> event_pb2.Event:
 def run_demo_publisher(service: NotificationService, stop_event: threading.Event) -> None:
     event_index = 0
     while not stop_event.is_set():
+        logging.info(f"Publishing demo event #{event_index}")
         service.publish_event(build_demo_event(event_index))
         event_index += 1
         stop_event.wait(5.0)

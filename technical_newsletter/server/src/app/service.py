@@ -66,6 +66,8 @@ class NotificationService(event_pb2_grpc.NotificationServiceServicer):
         with self._lock:
             subscribers = list(self._subscribers.values())
 
+        logging.info(f"Publishing event '{event.title}' to {len(subscribers)} subscribers")
+
         for subscriber in subscribers:
             if not subscriber.active:
                 continue
