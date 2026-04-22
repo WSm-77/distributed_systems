@@ -3,8 +3,8 @@ import traceback
 import sys, traceback, Ice
 
 from typing import List
-from src.servants.counter_impl import CounterImpl
-from src.servants.intwrapper_impl import IntWrapperObjectImpl
+from servants.counter_impl import CounterImpl
+from servants.intwrapper_impl import IntWrapperObjectImpl
 
 class Server:
     def __init__(self):
@@ -33,3 +33,8 @@ class Server:
                 status = 1
 
         sys.exit(status)
+
+
+def app():
+    srv = Server()
+    srv.run()

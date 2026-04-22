@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from generated.ServantsManagement import IntWrapperObject
 from typing import TYPE_CHECKING
 

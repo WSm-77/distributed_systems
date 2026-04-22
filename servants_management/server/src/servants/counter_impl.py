@@ -1,4 +1,6 @@
-from src.generated.ServantsManagement.Counter import Counter
+from __future__ import annotations
+
+from generated.ServantsManagement.Counter import Counter
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
