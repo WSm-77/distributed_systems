@@ -1,4 +1,4 @@
-from server.generated.ServantsManagement import IntWrapperObject
+from generated.ServantsManagement import IntWrapperObject
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

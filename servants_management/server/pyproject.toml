@@ -8,5 +8,16 @@ dependencies = [
     "zeroc-ice>=3.8.1",
 ]
 
+[tool.uv]
+package = true
+
+[tool.setuptools.packages.find]
+include = ["src*", "src/generated/ServantsManagement*"]
+
 [tool.uv.extra-build-dependencies]
 zeroc-ice = ["setuptools"]
+
+[project.scripts]
+server = "src.app:app"
+generate-ice = "tools.generate_ice:main"
+

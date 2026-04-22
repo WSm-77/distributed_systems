@@ -1,4 +1,4 @@
-from server.src.generated.ServantsManagement.Counter import Counter
+from src.generated.ServantsManagement.Counter import Counter
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

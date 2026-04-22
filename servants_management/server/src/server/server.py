@@ -3,8 +3,8 @@ import traceback
 import sys, traceback, Ice
 
 from typing import List
-from server.src.servants.counter_impl import CounterImpl
-from server.src.servants.intwrapper_impl import IntWrapperObjectImpl
+from src.servants.counter_impl import CounterImpl
+from src.servants.intwrapper_impl import IntWrapperObjectImpl
 
 class Server:
     def __init__(self):
