@@ -11,5 +11,5 @@ dist/
 build/
 
 # Generated files
-generated/*
+**/generated/*
 !.gitkeep
