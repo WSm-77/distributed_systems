@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import List
 from servants.counter_impl import CounterImpl
 from servants.intwrapper_impl import IntWrapperObjectImpl, SharedIntWrapperObjectImpl
+from server.locator import Evictor
 from utils.utils import create_logger
 
 logger = create_logger(__name__)
@@ -13,9 +14,6 @@ logger = create_logger(__name__)
 class Server:
     def __init__(self):
         self.counter = CounterImpl()
-        # Dedicated servants: separate instances (one per object)
-        self.int_wrapper_d1 = IntWrapperObjectImpl()
-        self.int_wrapper_d2 = IntWrapperObjectImpl()
         # Shared servant: a single instance serving multiple identities
         self.int_wrapper_shared = SharedIntWrapperObjectImpl()
 
@@ -49,11 +47,10 @@ class Server:
             logger.info("Registering Counter servant as identity='counter'")
             adapter.add(self.counter, Ice.Identity(name="counter"))
 
-            # Register dedicated IntWrapper servants (separate instances)
-            logger.info("Registering Dedicated IntWrapper servant as identity='IntWrapper1'")
-            adapter.add(self.int_wrapper_d1, Ice.Identity(name="IntWrapper1"))
-            logger.info("Registering Dedicated IntWrapper servant as identity='IntWrapper2'")
-            adapter.add(self.int_wrapper_d2, Ice.Identity(name="IntWrapper2"))
+            # Register a ServantLocator for dedicated servants (lazy creation via ASM)
+            logger.info("Registering Evictor for empty category (lazy dedicated servants)")
+            locator = Evictor(adapter)
+            adapter.addServantLocator(locator, "")
 
             # Register a shared IntWrapper servant for multiple identities
             logger.info("Registering Shared IntWrapper servant for identities 'IntWrapperShared1' and 'IntWrapperShared2'")
