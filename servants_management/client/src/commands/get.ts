@@ -1,18 +1,20 @@
-import { withCommunicator, proxyStub } from "../lib/ice.ts";
+import { withCommunicator } from "../lib/ice.ts";
+import { ServantsManagement } from "../generated/servants.js";
 
 export async function executeGet(args: string[]) {
-  const id = args[0];
-  if (!id) {
-    console.error("Usage: get <id>");
-    return;
-  }
+  const id = args[0] || "IntWrapper";
+  const host = args[1] || process.env.SERVANTS_HOST || "127.0.0.1";
+  const port = args[2] || process.env.SERVANTS_PORT || "10000";
 
   await withCommunicator(async (communicator) => {
-    console.log(`(stub) Requesting object ${id} using communicator`);
-    const proxy = proxyStub(id);
-    // TODO: use generated Slice bindings, e.g.:
-    // const p = ServantsManagement.CounterPrx.checkedCast(communicator.stringToProxy(proxyString));
-    // const value = await p.get();
-    console.log(`(stub) value for ${id}: <stub-value>`);
+    const proxyStr = `${id}:tcp -h ${host} -p ${port}`;
+    const base = communicator.stringToProxy(proxyStr);
+    const prx = ServantsManagement.IntWrapperObjectPrx.checkedCast(base);
+    if (!prx) {
+      console.error("checkedCast failed for IntWrapperObject");
+      return;
+    }
+    const value = await prx.getValue();
+    console.log(value);
   });
 }

@@ -1,8 +1,7 @@
-import { withCommunicator } from "./lib/ice.ts";
-import { executeGet } from "./commands/get.ts";
-import { executeSet } from "./commands/set.ts";
-import { executeList } from "./commands/list.ts";
-import { executeEvict } from "./commands/evict.ts";
+import { executeGet } from "@/commands/get.ts";
+import { executeSet } from "@/commands/set.ts";
+import { executeList } from "@/commands/list.ts";
+import { executeEvict } from "@/commands/evict.ts";
 
 const [, , command, ...rest] = process.argv;
 
