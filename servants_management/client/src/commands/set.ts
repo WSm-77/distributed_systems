@@ -14,7 +14,7 @@ export async function executeSet(args: string[]) {
   await withCommunicator(async (communicator) => {
     const proxyStr = `${id}:tcp -h ${host} -p ${port}`;
     const base = communicator.stringToProxy(proxyStr);
-    const prx = ServantsManagement.IntWrapperObjectPrx.checkedCast(base);
+    const prx = await ServantsManagement.IntWrapperObjectPrx.checkedCast(base);
     if (!prx) {
       console.error("checkedCast failed for IntWrapperObject");
       return;
