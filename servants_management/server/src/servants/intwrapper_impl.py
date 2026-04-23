@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from generated.ServantsManagement import IntWrapperObject
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 from utils.utils import create_logger
 
 if TYPE_CHECKING:
@@ -13,16 +13,16 @@ class IntWrapperObjectImpl(IntWrapperObject):
     """Dedicated servant: one instance per object, keeps its own value."""
     def __init__(self) -> None:
         super().__init__()
-        self._value = 0
+        self._values: Dict[str, int] = {}
         logger.info("Instantiated Dedicated IntWrapperObjectImpl")
 
     def getValue(self, current: Current) -> int | Awaitable[int]:
         logger.info(f"[Dedicated] getValue called for object {current.id.name}, returning {self._value}")
-        return self._value
+        return self._values[current.id.name]
 
     def setValue(self, value: int, current: Current) -> None | Awaitable[None]:
         logger.info(f"[Dedicated] setValue called for object {current.id.name}, setting {self._value} to {value}")
-        self._value = value
+        self._values[current.id.name] = value
 
 
 class SharedIntWrapperObjectImpl(IntWrapperObject):

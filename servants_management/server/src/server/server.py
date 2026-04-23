@@ -6,16 +6,14 @@ from pathlib import Path
 from typing import List
 from servants.counter_impl import CounterImpl
 from servants.intwrapper_impl import IntWrapperObjectImpl, SharedIntWrapperObjectImpl
-from server.locator import Evictor
+from server.evictor import Evictor
 from utils.utils import create_logger
 
 logger = create_logger(__name__)
 
 class Server:
     def __init__(self):
-        self.counter = CounterImpl()
-        # Shared servant: a single instance serving multiple identities
-        self.int_wrapper_shared = SharedIntWrapperObjectImpl()
+        pass
 
     async def run(self, args: List[str] | None = None):
         # Load the contents of the server.conf file into a Properties object.
@@ -43,19 +41,10 @@ class Server:
             # Create an object adapter that listens for incoming requests and dispatches them to servants.
             adapter = communicator.createObjectAdapter("Adapter")
 
-            # Register the Counter servant with the adapter.
-            logger.info("Registering Counter servant as identity='counter'")
-            adapter.add(self.counter, Ice.Identity(name="counter"))
-
             # Register a ServantLocator for dedicated servants (lazy creation via ASM)
             logger.info("Registering Evictor for empty category (lazy dedicated servants)")
-            locator = Evictor(adapter)
-            adapter.addServantLocator(locator, "")
-
-            # Register a shared IntWrapper servant for multiple identities
-            logger.info("Registering Shared IntWrapper servant for identities 'IntWrapperShared1' and 'IntWrapperShared2'")
-            adapter.add(self.int_wrapper_shared, Ice.Identity(name="IntWrapperShared1"))
-            adapter.add(self.int_wrapper_shared, Ice.Identity(name="IntWrapperShared2"))
+            evictor = Evictor(adapter, capacity=10)
+            adapter.addServantLocator(evictor, "")
 
             # Start dispatching requests.
             adapter.activate()
@@ -65,8 +54,6 @@ class Server:
                 await communicator.shutdownCompleted()
             except asyncio.CancelledError:
                 logger.info("Caught Ctrl+C, shutting down...")
-
-
 
 if __name__ == "__main__":
     server = Server()
