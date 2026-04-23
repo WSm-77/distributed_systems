@@ -35,10 +35,12 @@ class Server:
         # The communicator gets its properties from the properties object.
         async with Ice.Communicator(initData=initData) as communicator:
             # Create an object adapter that listens for incoming requests and dispatches them to servants.
-            adapter = communicator.createObjectAdapter("CounterAdapter")
+            adapter = communicator.createObjectAdapter("Adapter")
 
             # Register the Counter servant with the adapter.
             adapter.add(self.counter, Ice.Identity(name="counter"))
+            # Register the IntWrapper servant with the adapter.
+            adapter.add(self.int_wrapper, Ice.Identity(name="IntWrapper"))
 
             # Start dispatching requests.
             adapter.activate()

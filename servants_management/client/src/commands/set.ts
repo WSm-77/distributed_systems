@@ -2,14 +2,14 @@ import { withCommunicator } from "../lib/ice.ts";
 import { ServantsManagement } from "../generated/servants.js";
 
 export async function executeSet(args: string[]) {
-  const id = args[0] || "IntWrapper";
-  const value = args[1];
+  const id = "IntWrapper";
+  const value = args[0];
   if (value === undefined) {
-    console.error("Usage: set <id> <value>");
+    console.error("Usage: set <value>");
     return;
   }
   const host = args[2] || process.env.SERVANTS_HOST || "127.0.0.1";
-  const port = args[3] || process.env.SERVANTS_PORT || "10000";
+  const port = args[3] || process.env.SERVANTS_PORT || "4061";
 
   await withCommunicator(async (communicator) => {
     const proxyStr = `${id}:tcp -h ${host} -p ${port}`;
