@@ -9,17 +9,6 @@ from typing import Tuple, Dict
 import time
 
 logger = create_logger(__name__)
-
-class MetaServant(Ice.Object):
-    """Lightweight servant used only to answer Ice meta-operations (ice_isA, ice_ids, ...).
-
-    The important part is that its _ice_ids contains the Slice type id for the business
-    interface so that checkedCast/ice_isA can succeed without creating the full servant.
-    """
-
-    # will be filled in dynamically when the locator is created
-    _ice_ids = ("::Ice::Object",)
-
 class Evictor(Ice.ServantLocator):
     def __init__(self, adapter: Ice.ObjectAdapter, capacity: int = 10):
         self.adapter = adapter
@@ -27,7 +16,6 @@ class Evictor(Ice.ServantLocator):
         self.access_time: SortedDict[str, float] = SortedDict()
         self.servants: Dict[str, IntWrapperObjectImpl] = {}
         self.lock = Lock()
-        self.meta_servant = MetaServant()
         self.shared_intwrapper: IntWrapperObjectImpl | None = None
 
     def locate(self, current: Ice.Current) -> Tuple[Ice.Object | None, object | None]:
@@ -36,15 +24,11 @@ class Evictor(Ice.ServantLocator):
             op = current.operation
             logger.info(f"ServantLocator.locate() op={op!r} id={id_name!r}")
 
-            # if op.startswith("ice_"):
-            #     logger.info(f"ServantLocator: answering meta-op {op!r} for id={id_name!r} with MetaServant")
-            #     return self.meta_servant, None
-
             if "counter" in id_name:
-                logger.info(f"ServerLocator: creating Dedicated servant for id={id_name!r}")
+                logger.info(f"ServerLocator: creating dedicated servant for id={id_name!r}")
                 self.servants[id_name] = CounterImpl()
             else:
-                logger.info(f"ServantLocator: creating Dedicated servant for id={id_name!r}")
+                logger.info(f"ServantLocator: using shared servant for id={id_name!r}")
                 if self.shared_intwrapper is None:
                     logger.info("Instantiating shared IntWrapper servant for non-counter objects")
                     self.shared_intwrapper = IntWrapperObjectImpl()

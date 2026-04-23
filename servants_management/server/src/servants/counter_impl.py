@@ -16,9 +16,12 @@ class CounterImpl(Counter):
         self._counter = 0
 
     def getCounter(self, current: Current) -> int | Awaitable[int]:
-        logger.info(f"getValue called, for object {current.id.name}, returning {self._counter}")
+        logger.info(f"getCounter called, for object {current.id.name}, using servant {self}, returning {self._counter}")
         return self._counter
 
     def incrementCounter(self, current: Current) -> None | Awaitable[None]:
-        logger.info(f"getValue called, for object {current.id.name}, returning {self._counter}")
+        logger.info(f"incrementCounter called, for object {current.id.name}, using servant {self}, incrementing {self._counter}")
         self._counter += 1
+
+    def __repr__(self):
+        return f"CounterImpl(id={id(self)})"

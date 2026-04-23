@@ -17,13 +17,16 @@ class IntWrapperObjectImpl(IntWrapperObject):
         logger.info("Instantiated Dedicated IntWrapperObjectImpl")
 
     def getValue(self, current: Current) -> int | Awaitable[int]:
-        logger.info(f"[Dedicated] getValue called for object {current.id.name}, returning {self._value}")
-        return self._values[current.id.name]
+        value = self._values.get(current.id.name, 0)
+        logger.info(f"[Dedicated] getValue called for object {current.id.name}, using servant {self}, returning {value}")
+        return value
 
     def setValue(self, value: int, current: Current) -> None | Awaitable[None]:
-        logger.info(f"[Dedicated] setValue called for object {current.id.name}, setting {self._value} to {value}")
+        logger.info(f"[Dedicated] setValue called for object {current.id.name}, using servant {self}, setting {self._values.get(current.id.name, 0)} to {value}")
         self._values[current.id.name] = value
 
+    def __repr__(self) -> str:
+        return f"IntWrapperObjectImpl(id={id(self)})"
 
 class SharedIntWrapperObjectImpl(IntWrapperObject):
     """Shared servant: a single instance serves multiple identities but keeps
