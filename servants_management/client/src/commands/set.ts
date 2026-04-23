@@ -2,10 +2,10 @@ import { withCommunicator } from "../lib/ice.ts";
 import { ServantsManagement } from "../generated/servants.js";
 
 export async function executeSet(args: string[]) {
-  const id = "IntWrapper";
-  const value = args[0];
+  const id = args[0] || "IntWrapper";
+  const value = args[1];
   if (value === undefined) {
-    console.error("Usage: set <value>");
+    console.error("Usage: set <id> <value>");
     return;
   }
   const host = args[2] || process.env.SERVANTS_HOST || "127.0.0.1";
