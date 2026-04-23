@@ -1,5 +1,4 @@
 import sys
-import traceback
 import sys, traceback, Ice
 import asyncio
 from pathlib import Path
@@ -7,6 +6,9 @@ from pathlib import Path
 from typing import List
 from servants.counter_impl import CounterImpl
 from servants.intwrapper_impl import IntWrapperObjectImpl
+from utils.utils import create_logger
+
+logger = create_logger(__name__)
 
 class Server:
     def __init__(self):
@@ -15,6 +17,8 @@ class Server:
 
     async def run(self, args: List[str] | None = None):
         # Load the contents of the server.conf file into a Properties object.
+        logger.info("Starting server...")
+
         configFileProperties = Ice.Properties()
         # Load config file from the package directory so running from a
         # different working directory still finds the file.
@@ -40,7 +44,8 @@ class Server:
             # Register the Counter servant with the adapter.
             adapter.add(self.counter, Ice.Identity(name="counter"))
             # Register the IntWrapper servant with the adapter.
-            adapter.add(self.int_wrapper, Ice.Identity(name="IntWrapper"))
+            adapter.add(self.int_wrapper, Ice.Identity(name="IntWrapper1"))
+            adapter.add(self.int_wrapper, Ice.Identity(name="IntWrapper2"))
 
             # Start dispatching requests.
             adapter.activate()
@@ -49,7 +54,7 @@ class Server:
             try:
                 await communicator.shutdownCompleted()
             except asyncio.CancelledError:
-                print("Caught Ctrl+C, shutting down...")
+                logger.info("Caught Ctrl+C, shutting down...")
 
 
 
