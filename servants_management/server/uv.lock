@@ -1,0 +1,49 @@
+version = 1
+revision = 3
+requires-python = ">=3.12"
+resolution-markers = [
+    "python_full_version >= '3.14' and sys_platform == 'win32'",
+    "python_full_version >= '3.14' and sys_platform == 'emscripten'",
+    "python_full_version >= '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.14' and sys_platform == 'win32'",
+    "python_full_version < '3.14' and sys_platform == 'emscripten'",
+    "python_full_version < '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
+
+[[package]]
+name = "server"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "sortedcontainers" },
+    { name = "zeroc-ice" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "sortedcontainers", specifier = ">=2.4.0" },
+    { name = "zeroc-ice", specifier = ">=3.8.1" },
+]
+
+[[package]]
+name = "sortedcontainers"
+version = "2.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e8/c4/ba2f8066cceb6f23394729afe52f3bf7adec04bf9ed2c820b39e19299111/sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88", size = 30594, upload-time = "2021-05-16T22:03:42.897Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/46/9cb0e58b2deb7f82b84065f37f3bffeb12413f947f9388e4cac22c4621ce/sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0", size = 29575, upload-time = "2021-05-16T22:03:41.177Z" },
+]
+
+[[package]]
+name = "zeroc-ice"
+version = "3.8.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/50/cd/362f8320c13c59b17c04af425302c976b8fbe0ea957906eeda78032fd6f8/zeroc_ice-3.8.1.tar.gz", hash = "sha256:b97b36e00c7f9e1903e3bc18c9dc2fe0fba2913c3ef8a3f90f3663a9379d32ec", size = 1050466, upload-time = "2026-03-02T15:43:01.452Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ca/b9/a308e202873d76aeafa53c7e03354518dcdd3ed0347d95c566fb6720a6f9/zeroc_ice-3.8.1-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:cf621e4c2c050ccd7bef6d8e9d7020b467668860186a45da9be22ef6fdc66745", size = 4511307, upload-time = "2026-03-02T15:42:50.453Z" },
+    { url = "https://files.pythonhosted.org/packages/d3/ab/64a5fe3ffe71d9f494fd344f3b1f507345818339e2598359c324925dbd29/zeroc_ice-3.8.1-cp312-cp312-win_amd64.whl", hash = "sha256:9848baf43af653ff4507f97112702b18bdaf014872b12a67d63e586f271e74f8", size = 23123470, upload-time = "2026-03-02T15:42:52.226Z" },
+    { url = "https://files.pythonhosted.org/packages/ce/7d/24dc1265baed303dd0df7b15c855bdb6ac2076af28b95e463f2e22f10a75/zeroc_ice-3.8.1-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:0eaa4830caf8106e58cc40e65c19818f7d01d42334b8bad6bcd989cb19573597", size = 4511416, upload-time = "2026-03-02T15:42:54.076Z" },
+    { url = "https://files.pythonhosted.org/packages/1c/cd/bf0415997d3e68565284a356114e71ecbef397013ace2b527ae8ff789c51/zeroc_ice-3.8.1-cp313-cp313-win_amd64.whl", hash = "sha256:bf8c5dd69401d4f3fdf69afdfb453f41e292f8bae3f0e1bb70675814f623f207", size = 23137571, upload-time = "2026-03-02T15:42:55.92Z" },
+    { url = "https://files.pythonhosted.org/packages/2b/f2/d35a44596a8a5599310d031df2cb95fb2b8a3f0be484ed84ae337f1b529e/zeroc_ice-3.8.1-cp314-cp314-macosx_10_15_universal2.whl", hash = "sha256:2263048a0b2e029737c2fe8a0e08aa4701cdc5c9cf0dc0aa3a357756ce34f4dc", size = 4512541, upload-time = "2026-03-02T15:42:57.97Z" },
+    { url = "https://files.pythonhosted.org/packages/0d/e3/b269952c448616b228895413ce1675d8b4c60eadebf04a87a01305d0a839/zeroc_ice-3.8.1-cp314-cp314-win_amd64.whl", hash = "sha256:5a82b5b89566a3f5cf19ef5ff6f1f4ccc3af63885942c3150af486f8fec44637", size = 23457154, upload-time = "2026-03-02T15:42:59.653Z" },
+]

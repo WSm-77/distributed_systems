@@ -1,0 +1,28 @@
+[project]
+name = "server"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "sortedcontainers>=2.4.0",
+    "zeroc-ice>=3.8.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = true
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/generated/ServantsManagement" = "ServantsManagement"
+
+[tool.uv.extra-build-dependencies]
+zeroc-ice = ["setuptools"]
+
+[project.scripts]
+server = "app.app:app"
+generate-ice = "tools.generate_ice:main"
+
