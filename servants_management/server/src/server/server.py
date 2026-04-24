@@ -5,7 +5,6 @@ from pathlib import Path
 
 from typing import List
 from servants.counter_impl import CounterImpl
-from servants.intwrapper_impl import IntWrapperObjectImpl, SharedIntWrapperObjectImpl
 from server.evictor import Evictor
 from utils.utils import create_logger
 
