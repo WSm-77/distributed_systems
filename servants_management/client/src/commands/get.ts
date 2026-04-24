@@ -16,6 +16,6 @@ export async function executeGet(args: string[]) {
       return;
     }
     const value = await prx.getValue();
-    console.log(value);
+    console.log(`IntWrapper ${id}, got value: ${value}`);
   });
 }

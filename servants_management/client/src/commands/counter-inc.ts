@@ -16,6 +16,6 @@ export async function executeCounterInc(args: string[]) {
     }
     await prx.incrementCounter();
     const value = await prx.getCounter();
-    console.log(value);
+    console.log(`Counter ${id}, incremented value to: ${value}`);
   });
 }

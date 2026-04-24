@@ -25,6 +25,6 @@ export async function executeSet(args: string[]) {
       return;
     }
     await prx.setValue(num);
-    console.log("OK");
+    console.log(`IntWrapper ${id}, setting value to: ${value}`);
   });
 }

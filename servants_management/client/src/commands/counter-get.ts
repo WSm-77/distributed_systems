@@ -15,6 +15,6 @@ export async function executeCounterGet(args: string[]) {
       return;
     }
     const value = await prx.getCounter();
-    console.log(value);
+    console.log(`Counter ${id}, got value: ${value}`);
   });
 }
