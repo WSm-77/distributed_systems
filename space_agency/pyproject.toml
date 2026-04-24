@@ -1,0 +1,22 @@
+[project]
+name = "space-agency"
+version = "0.1.0"
+description = "Simple project that presents abilities of RabbitMQ"
+readme = "README.md"
+authors = [
+    { name = "Wiktor Sędzimir", email = "wiktor.sedzimir@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "pika>=1.3.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = true
+
+[project.scripts]
+carrier = "space_agency.carrier.app:app"
