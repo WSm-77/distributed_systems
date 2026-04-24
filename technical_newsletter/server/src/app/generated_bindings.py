@@ -3,7 +3,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# grpc_tools generated files import each other as top-level modules.
 GENERATED_DIR = Path(__file__).resolve().parents[1] / "generated"
 if str(GENERATED_DIR) not in sys.path:
 	sys.path.insert(0, str(GENERATED_DIR))
