@@ -1,7 +1,6 @@
 import { executeGet } from "@/commands/get.ts";
 import { executeSet } from "@/commands/set.ts";
 import { executeList } from "@/commands/list.ts";
-import { executeEvict } from "@/commands/evict.ts";
 import { executeCounterGet } from "@/commands/counter-get.ts";
 import { executeCounterInc } from "@/commands/counter-inc.ts";
 
@@ -44,9 +43,6 @@ const main: () => Promise<void> = async function main() {
         break;
       case "list":
         await executeList(rest);
-        break;
-      case "evict":
-        await executeEvict(rest);
         break;
       default:
         console.error("Unknown command:", command);
