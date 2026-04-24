@@ -35,22 +35,12 @@ Always regenerate both sides when you change `proto/event.proto`.
 
 ## Starting the server
 
-The server listens on port `50051` by default.
-
 - Preferred (uses pyproject script):
 ```bash
 cd server
 uv sync            # install dependencies from uv.lock (if present)
 uv run app
 ```
-
-- Direct Python (works for local development):
-```bash
-cd server
-PYTHONPATH=src python -m src.app.app
-```
-
-Either approach starts the gRPC server and a demo publisher that emits sample events.
 
 ## CLI overview
 
@@ -64,18 +54,18 @@ Common flags (both CLI categories)
 - Purpose: Open a long-lived streaming subscription to receive live events that match the given filters.
 - Required: `--events` and `--skills`
 - Example:
-  ```bash
+```bash
   npm --prefix client run subscribe -- --client-id integration-client --events WORKSHOP --skills BEGINNER,INTERMEDIATE
-  ```
+```
 - Behavior: Opens a streaming RPC (`Subscribe`) and logs each incoming event to stdout. On SIGINT/SIGTERM the CLI sends an `Unsubscribe` RPC to close server-side state cleanly.
 
 2) add-subscriptions
 - Purpose: Add additional event type(s) and/or skill level(s) to an existing subscription without reconnecting the stream.
 - Required: `--client-id` and at least one of `--events` or `--skills`
 - Example:
-  ```bash
+```bash
   npm --prefix client run add-subscriptions -- --client-id integration-client --events CONFERENCE --skills INTERMEDIATE
-  ```
+```
 - Behavior: Calls `AddSubscriptionFilters`. The CLI prints the `SubscriptionFiltersResponse` summary returned by the server (see examples below).
 
 3) remove-subscriptions
@@ -91,95 +81,34 @@ Common flags (both CLI categories)
 
 Example sequence 1 — start server, subscribe, add a category, receive new events:
 
+### Server
+
 1) Start the server
 ```bash
 cd server
 uv run app
 ```
 
-2) Start a subscriber (in another shell)
+### Client
+
+> [!TIP]
+>
+> Run these commands in `client/` to avoid having to specify `--prefix client` every time.
+
+1) Start two subscribers (in another shells)
+
 ```bash
 npm run subscribe -- --client-id alice --events WORKSHOP --skills BEGINNER,INTERMEDIATE
+npm run subscribe -- --client-id bob --events WORKSHOP --skills BEGINNER,INTERMEDIATE
 ```
 
-Subscriber console (trimmed):
-```
-Subscribing with filters: { clientId: 'alice', address: 'localhost:50051', categories: ['WORKSHOP'], skillLevels: ['BEGINNER','INTERMEDIATE'] }
-Received event: { id: 'evt-0001', title: 'Intro to Webhooks', category: 'WORKSHOP', skillLevel: 'BEGINNER', location: 'Berlin, DE', date: '2026-04-21' }
-```
+2) While the subscriber stream is active, add a category:
 
-3) While the subscriber stream is active, add a category:
 ```bash
 npm run add-subscriptions -- --client-id alice --events CONFERENCE
 ```
 
-CLI output (trimmed):
-```
-Add-subscriptions result: {
-  success: true,
-  clientId: 'alice',
-  categories: ['WORKSHOP','CONFERENCE'],
-  skillLevels: ['BEGINNER','INTERMEDIATE'],
-  message: 'Filters added'
-}
-```
-
-After the mutation the running subscriber may show new events matching `CONFERENCE`:
-```
-Received event: { id: 'evt-0002', title: 'Cloud Conference 2026', category: 'CONFERENCE', skillLevel: 'INTERMEDIATE', location: 'Online', date: '2026-05-10' }
-```
-
-Example 2 — remove subscriptions:
+3) remove subscriptions:
 ```bash
 npm run remove-subscriptions -- --client-id alice --events WORKSHOP
 ```
-
-Output (trimmed):
-```
-Remove-subscriptions result: {
-  success: true,
-  clientId: 'alice',
-  categories: ['CONFERENCE'],
-  skillLevels: ['BEGINNER','INTERMEDIATE'],
-  message: 'Filters removed'
-}
-```
-
-Example 3 — mutation against an unknown client
-```bash
-npm run add-subscriptions -- --client-id unknown-client --events HACKATHON
-```
-
-Output (trimmed):
-```
-Add-subscriptions result: {
-  success: false,
-  clientId: 'unknown-client',
-  categories: [],
-  skillLevels: [],
-  message: 'Client is not subscribed'
-}
-```
-
-Unsubscribing (graceful shutdown)
-- Pressing Ctrl+C in the running `subscribe` process triggers the client to call `Unsubscribe` and will print:
-```
-Unsubscribe result: { success: true }
-Subscription stream ended.
-```
-
-## Troubleshooting & notes
-
-- Regenerate stubs after any proto change. Use the exact commands in the "Generating protobuf code" section above.
-- Interoperability note (breaking): the server `SubscriptionFiltersResponse` intentionally returns human-readable enum names as repeated strings (e.g., `"WORKSHOP"`, `"BEGINNER"`) rather than packed numeric enum values. This avoids packed enum/binary enum issues with local JS jspb runtimes but is a breaking API change. Update consumers and regenerate client stubs if your code expects numeric enums.
-- If a mutation RPC (`AddSubscriptionFilters` / `RemoveSubscriptionFilters`) returns `success: false`, the server is signaling the `client_id` is not a known subscribed client (no active subscription stream). Start or recreate the subscription first.
-- If you see `Argument error` from the client CLIs, re-check flag syntax; flags may be given inline (`--events=WORKSHOP`) or as separate args (`--events WORKSHOP`).
-- Common fixes:
-  - Client: `npm --prefix client install && npm --prefix client run generate:proto` after proto changes.
-  - Server: `cd server && uv sync && uv run python -m grpc_tools.protoc ...` (see generation command above).
-
-## Where to look next
-
-- Protobuf definition: [proto/event.proto](../proto/event.proto)
-- Server filter/mutation implementation: [server/src/app/service.py](../server/src/app/service.py)
-- Client CLI code: [client/src/cli](../client/src/cli)
