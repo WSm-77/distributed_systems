@@ -1,5 +1,5 @@
 import { Ice } from "@zeroc/ice";
-import { ServantsManagement } from "../src/generated/servants.js";
+import { ServantsManagement } from "@/generated/servants.js";
 
 async function main() {
   const communicator = Ice.initialize();

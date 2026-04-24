@@ -1,6 +1,5 @@
 import { executeGet } from "@/commands/get.ts";
 import { executeSet } from "@/commands/set.ts";
-import { executeList } from "@/commands/list.ts";
 import { executeCounterGet } from "@/commands/counter-get.ts";
 import { executeCounterInc } from "@/commands/counter-inc.ts";
 
@@ -40,9 +39,6 @@ const main: () => Promise<void> = async function main() {
         break;
       case "set":
         await executeSet(rest);
-        break;
-      case "list":
-        await executeList(rest);
         break;
       default:
         console.error("Unknown command:", command);
