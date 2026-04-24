@@ -10,20 +10,26 @@ if TYPE_CHECKING:
 
 logger = create_logger(__name__)
 class IntWrapperObjectImpl(IntWrapperObject):
-    """Dedicated servant: one instance per object, keeps its own value."""
+    """Shared Servant: one instance for all objects."""
     def __init__(self) -> None:
         super().__init__()
         self._values: Dict[str, int] = {}
-        logger.info("Instantiated Dedicated IntWrapperObjectImpl")
+        logger.info("Instantiated IntWrapperObjectImpl")
 
     def getValue(self, current: Current) -> int | Awaitable[int]:
         value = self._values.get(current.id.name, 0)
-        logger.info(f"[Dedicated] getValue called for object {current.id.name}, using servant {self}, returning {value}")
+        logger.info(f"getValue called for object {current.id.name}, using servant {self}, returning {value}")
         return value
 
     def setValue(self, value: int, current: Current) -> None | Awaitable[None]:
-        logger.info(f"[Dedicated] setValue called for object {current.id.name}, using servant {self}, setting {self._values.get(current.id.name, 0)} to {value}")
+        logger.info(f"setValue called for object {current.id.name}, using servant {self}, setting {self._values.get(current.id.name, 0)} to {value}")
         self._values[current.id.name] = value
 
     def __repr__(self) -> str:
-        return f"IntWrapperObjectImpl(id={id(self)})"
+        return \
+f"""
+IntWrapperObjectImpl(
+    id={id(self)}
+    values={self._values}
+)
+""".strip()
