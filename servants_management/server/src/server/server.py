@@ -43,7 +43,7 @@ class Server:
 
             # Register a ServantLocator for dedicated servants (lazy creation via ASM)
             logger.info("Registering Evictor for empty category (lazy dedicated servants)")
-            evictor = Evictor(adapter, capacity=10)
+            evictor = Evictor(adapter, capacity=3)
             adapter.addServantLocator(evictor, "")
 
             # Start dispatching requests.

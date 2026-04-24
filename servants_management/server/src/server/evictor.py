@@ -1,4 +1,6 @@
 import Ice
+import logging
+import time
 
 from servants.intwrapper_impl import IntWrapperObjectImpl
 from servants.counter_impl import CounterImpl
@@ -6,14 +8,13 @@ from utils.utils import create_logger
 from sortedcontainers import SortedDict
 from threading import Lock
 from typing import Tuple, Dict
-import time
 
-logger = create_logger(__name__)
+logger = create_logger(__name__, level=logging.DEBUG)
 class Evictor(Ice.ServantLocator):
     def __init__(self, adapter: Ice.ObjectAdapter, capacity: int = 10):
         self.adapter = adapter
         self.capacity = capacity
-        self.access_time: SortedDict[str, float] = SortedDict()
+        self.creation_time: SortedDict[str, float] = SortedDict()
         self.servants: Dict[str, IntWrapperObjectImpl] = {}
         self.lock = Lock()
         self.shared_intwrapper: IntWrapperObjectImpl | None = None
@@ -41,19 +42,29 @@ class Evictor(Ice.ServantLocator):
             except Exception:
                 logger.exception("Failed to add servant to adapter ASM")
 
-            self.access_time[id_name] = time.time()
+            self.creation_time[id_name] = time.time()
+
+            logger.debug(f"Current servants: {list(self.servants.keys())}, access times: {self.creation_time}")
+
+            if len(self.servants) > self.capacity:
+                # Evict least recently used servant (the first one in the sorted dict).
+                try:
+                    lru_id, _ = self.creation_time.popitem(0)
+                    self.servants.pop(lru_id, None)
+                    logger.debug(f"Evicting servant for id={lru_id!r} due to capacity limit")
+                    self.adapter.remove(current.id)  # Remove from ASM
+                except Exception:
+                    logger.exception(f"Failed to remove servant for id={lru_id!r} from adapter ASM")
 
             return self.servants[id_name], None
 
     def finished(self, current: Ice.Current, servant: Ice.Object, cookie: object | None):
-        # update last access timestamp (useful for eviction later)
-        try:
-            self.access_time[current.id.name] = time.time()
-            logger.debug(f"ServantLocator.finished() updated access time for {current.id.name!r}")
-        except Exception:
-            logger.exception("Error in finished()")
+        pass
 
     def deactivate(self, category: str):
         logger.info(f"ServantLocator.deactivate() category={category!r}")
+
+    def __repr__(self):
+        return f"Evictor(servants={list(self.servants.keys())}, capacity={self.capacity})"
 
 __all__ = ["Evictor"]
