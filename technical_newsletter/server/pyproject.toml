@@ -1,0 +1,19 @@
+[project]
+name = "server"
+version = "0.1.0"
+description = "A gRPC server for the technical newsletter application."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "grpcio>=1.80.0",
+    "grpcio-tools>=1.80.0",
+]
+
+[project.scripts]
+app = "src.app.app:main"
+
+[tool.uv]
+package = true
+
+[tool.setuptools.packages.find]
+include = ["src*"]

@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package subscription;
+
+enum EventType {
+    WORKSHOP = 0;
+    CONFERENCE = 1;
+    MEETUP = 2;
+    HACKATHON = 3;
+}
+
+enum SkillLevel {
+    BEGINNER = 0;
+    INTERMEDIATE = 1;
+    ADVANCED = 2;
+}
+
+message Location {
+    string city = 1;
+    string country = 2;
+}
+
+message Event {
+    string id = 1;
+    string title = 2;
+    EventType category = 3;
+    SkillLevel skill_level = 4;
+    Location location = 5;
+    string date = 6;
+}
+
+message SubscriptionRequest {
+    string client_id = 1;
+    repeated SkillLevel skill_level = 2;
+    repeated EventType categories = 3;
+}
+
+message UnsubscribeRequest {
+    string client_id = 1;
+}
+
+
+message UnsubscribeResponse {
+    bool success = 1;
+}
+
+
+message AddSubscriptionFiltersRequest {
+    string client_id = 1;
+    repeated SkillLevel skill_level = 2;
+    repeated EventType categories = 3;
+}
+
+message RemoveSubscriptionFiltersRequest {
+    string client_id = 1;
+    repeated SkillLevel skill_level = 2;
+    repeated EventType categories = 3;
+}
+
+message SubscriptionFiltersResponse {
+    bool success = 1;
+    string client_id = 2;
+    repeated string skill_level = 3;
+    repeated string categories = 4;
+    string message = 5;
+}
+
+service NotificationService {
+    rpc Subscribe(SubscriptionRequest) returns (stream Event);
+    rpc Unsubscribe(UnsubscribeRequest) returns (UnsubscribeResponse);
+    rpc AddSubscriptionFilters(AddSubscriptionFiltersRequest) returns (SubscriptionFiltersResponse);
+    rpc RemoveSubscriptionFilters(RemoveSubscriptionFiltersRequest) returns (SubscriptionFiltersResponse);
+}
