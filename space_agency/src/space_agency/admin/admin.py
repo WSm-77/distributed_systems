@@ -3,6 +3,7 @@ from space_agency.shared.models import AdminTopics
 from space_agency.utils.utils import create_logger
 from space_agency.shared.consumer import Consumer
 from space_agency.shared.config import get_settings
+from space_agency.shared.callbacks import get_agency_message_callback
 
 class Admin(Consumer):
     def __init__(self, logging_level=logging.DEBUG):
@@ -26,13 +27,12 @@ class Admin(Consumer):
             routing_key="#",
         )
 
-        def callback(ch, method, properties, body):
-            self.logger.debug(f"Received message with routing key: {method.routing_key}")
-            self.logger.info(body.decode())
+
+        agency_callback = get_agency_message_callback(self.logger)
 
         self.consume(
             queue=settings.admin_all_messages_queue,
-            on_message_callback=callback,
+            on_message_callback=agency_callback,
         )
 
         try:
