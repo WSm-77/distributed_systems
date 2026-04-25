@@ -1,4 +1,4 @@
-import logging, time, random
+import logging, time, random, threading
 from space_agency.shared.models import AdminTopics
 from space_agency.utils.utils import create_logger
 from space_agency.shared.consumer import Consumer
@@ -36,8 +36,34 @@ class Admin(Consumer):
         )
 
         try:
+            threading.Thread(
+                target=self.generate_messages,
+                daemon=True
+            ).start()
             self.start_consuming()
         except KeyboardInterrupt:
             self.stop_consuming()
+            self.logger.debug("Admin is shutting down...")
 
 
+    def generate_messages(self):
+        settings = get_settings()
+
+        topics = list(AdminTopics)
+
+        while True:
+            message = f"Admin message at {time.ctime()}"
+
+            topic = random.choice(topics)
+
+            def publish_job():
+                self.logger.info(f"Publishing admin message: {message}")
+                self.channel.basic_publish(
+                    exchange=settings.topic_exchange,
+                    routing_key=topic.value,
+                    body=message,
+                )
+                self.logger.debug(f"Published admin message with routing key: {topic.value}")
+
+            self.connection.add_callback_threadsafe(publish_job)
+            time.sleep(random.randint(3, 5))

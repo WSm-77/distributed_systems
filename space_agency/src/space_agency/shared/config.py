@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     # queue names
     admin_bradcaset_queue: str = "admin-braodcast-queue"
     admin_all_messages_queue: str = "admin-all-messages-queue"
+    carrier_admin_messages_queue: str = "carrier-admin-messages-queue"
+    agency_admin_messages_queue: str = "agency-admin-messages-queue"
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:

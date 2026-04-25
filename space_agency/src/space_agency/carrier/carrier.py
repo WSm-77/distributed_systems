@@ -1,5 +1,6 @@
 from space_agency.shared.models import AdminTopics, Services
 from space_agency.shared.consumer import Consumer
+from space_agency.shared.callbacks import get_admin_message_callback, get_agency_message_callback
 import logging
 
 class Carrier(Consumer):
@@ -16,31 +17,42 @@ class Carrier(Consumer):
         # Establish a connection to RabbitMQ
         self.pre_run_configuration()
 
+        # Declare the queue for receiving admin messages
+        self.channel.queue_declare(
+            queue=self.settings.carrier_admin_messages_queue,
+            durable=True,
+            auto_delete=True,
+        )
+
+        # Bind the queue to the appropriate routing keys
         self.channel.queue_bind(
             exchange=self.settings.topic_exchange,
-            queue=self.settings.admin_bradcaset_queue,
+            queue=self.settings.carrier_admin_messages_queue,
             routing_key=AdminTopics.CARRIER.value,
         )
 
         self.channel.queue_bind(
             exchange=self.settings.topic_exchange,
-            queue=self.settings.admin_bradcaset_queue,
+            queue=self.settings.carrier_admin_messages_queue,
             routing_key=AdminTopics.ALL.value,
         )
 
-        # Define a callback function to process incoming messages
-        def callback(ch, method, properties, body):
-            self.logger.debug(f"Received message with routing key: {method.routing_key}")
-            self.logger.info(body.decode())
+        agency_message_callback = get_agency_message_callback(self.logger)
+        admin_message_callback = get_admin_message_callback(self.logger)
 
         # Tell RabbitMQ to consume messages from the 'hello' queue
         self.consume(
             queue=self.first_service.value,
-            on_message_callback=callback,
+            on_message_callback=agency_message_callback,
         )
         self.consume(
             queue=self.second_service.value,
-            on_message_callback=callback,
+            on_message_callback=agency_message_callback,
+        )
+
+        self.consume(
+            queue=self.settings.carrier_admin_messages_queue,
+            on_message_callback=admin_message_callback,
         )
 
         try:
