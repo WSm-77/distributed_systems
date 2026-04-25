@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "pika>=1.3.2",
+    "pydantic-settings>=2.14.0",
 ]
 
 [build-system]
@@ -20,3 +21,4 @@ package = true
 
 [project.scripts]
 carrier = "space_agency.carrier.app:app"
+agency = "space_agency.agency.app:app"
