@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     rabbitmq_user: str = "admin"
     rabbitmq_password: str = "admin"
 
+    # exchange names
+    topic_exchange: str = "space-delivery"
+
+    # topic names
+    admin_messages_topic: str = "admin-messages"
+
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     return Settings()

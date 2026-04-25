@@ -1,54 +1,45 @@
-from space_agency.shared.rabbitmq import get_rabbitmq_connection
+import time,logging, random, uuid
+from pika.adapters.blocking_connection import BlockingChannel
+from space_agency.shared.config import get_settings
 from space_agency.shared.models import Services
 from space_agency.utils.utils import create_logger
-import logging
+from space_agency.shared.consumer import Consumer
 
-class Agency:
-    def __init__(self, logging_level=logging.DEBUG):
+class Agency(Consumer):
+    def __init__(self, name: str = "Agency", logging_level=logging.DEBUG):
+        super().__init__(name, logging_level)
         self.logger = create_logger(__name__, logging_level)
+        self.settings = get_settings()
 
     def run(self):
-        # Establish a connection to RabbitMQ
-        connection = get_rabbitmq_connection()
+        self.pre_run_configuration()
 
-        # Declare an exchange (we'll use the default direct exchange here)
-        channel = connection.channel()
-        channel.exchange_declare(exchange='space-delivery', exchange_type='direct')
+        try:
+            self.generate_jobs(self.channel)
+        except KeyboardInterrupt:
+            self.logger.debug("Agency is shutting down...")
 
-        # Declare a queue named 'hello'
-        channel.queue_declare(queue=Services.PEOPLE_TRANSPORT.value, durable=True)
-        channel.queue_declare(queue=Services.CARGO_TRANSPORT.value, durable=True)
-        channel.queue_declare(queue=Services.SATELLITE_DEPLOYMENT.value, durable=True)
+    def generate_jobs(self, channel: BlockingChannel):
+        services = list(Services)
+        self.settings = get_settings()
 
-        # Bind the queue to the default exchange with a routing key 'hello'
-        channel.queue_bind(
-            exchange='space-delivery',
-            queue=Services.PEOPLE_TRANSPORT.value,
-            routing_key=Services.PEOPLE_TRANSPORT.value
-        )
-        channel.queue_bind(
-            exchange='space-delivery',
-            queue=Services.CARGO_TRANSPORT.value,
-            routing_key=Services.CARGO_TRANSPORT.value
-        )
-        channel.queue_bind(
-            exchange='space-delivery',
-            queue=Services.SATELLITE_DEPLOYMENT.value,
-            routing_key=Services.SATELLITE_DEPLOYMENT.value
-        )
+        job_id = 0
 
-        # The message to send
-        message = 'Hello, World!'
+        while True:
+            service = random.choice(services)
+            message = f"""
+job: {job_id}
+agency: {self.name}
+service: {service.value}
+time: {time.time()}
+            """.strip()
 
-        # Publish the message to the exchange with the routing key 'hello'
-        # channel.basic_publish(exchange='space-delivery',
-                            # routing_key=Services.PEOPLE_TRANSPORT.value,
-                            # body=message)
-        channel.basic_publish(exchange='space-delivery',
-                            routing_key=Services.CARGO_TRANSPORT.value,
-                            body=message)
+            self.logger.info(f"Generated job for service: {service.value}")
+            channel.basic_publish(
+                exchange=self.settings.topic_exchange,
+                routing_key=service.value,
+                body=message
+            )
 
-        self.logger.info(f" [x] Sent '{message}'")
-
-        # Close the connection
-        connection.close()
+            job_id += 1
+            time.sleep(random.randint(1, 3))
