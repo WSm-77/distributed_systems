@@ -17,9 +17,11 @@ class Carrier(Consumer):
         # Establish a connection to RabbitMQ
         self.pre_run_configuration()
 
+        admin_messages_queue_name = f"{self.settings.carrier_admin_messages_queue}-{self.name}"
+
         # Declare the queue for receiving admin messages
         self.channel.queue_declare(
-            queue=self.settings.carrier_admin_messages_queue,
+            queue=admin_messages_queue_name,
             durable=True,
             auto_delete=True,
         )
@@ -27,13 +29,13 @@ class Carrier(Consumer):
         # Bind the queue to the appropriate routing keys
         self.channel.queue_bind(
             exchange=self.settings.topic_exchange,
-            queue=self.settings.carrier_admin_messages_queue,
+            queue=admin_messages_queue_name,
             routing_key=AdminTopics.CARRIER.value,
         )
 
         self.channel.queue_bind(
             exchange=self.settings.topic_exchange,
-            queue=self.settings.carrier_admin_messages_queue,
+            queue=admin_messages_queue_name,
             routing_key=AdminTopics.ALL.value,
         )
 
@@ -47,11 +49,11 @@ class Carrier(Consumer):
         )
         self.consume(
             queue=self.second_service.value,
-            on_message_callback=agency_message_callback,
+        on_message_callback=agency_message_callback,
         )
 
         self.consume(
-            queue=self.settings.carrier_admin_messages_queue,
+            queue=admin_messages_queue_name,
             on_message_callback=admin_message_callback,
         )
 

@@ -52,9 +52,9 @@ class Admin(Consumer):
         topics = list(AdminTopics)
 
         while True:
-            message = f"Admin message at {time.ctime()}"
-
             topic = random.choice(topics)
+
+            message = f"Admin message at for topic {topic.value} at {time.ctime()}"
 
             def publish_job():
                 self.logger.info(f"Publishing admin message: {message}")

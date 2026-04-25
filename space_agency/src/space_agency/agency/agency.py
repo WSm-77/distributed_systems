@@ -13,9 +13,11 @@ class Agency(Consumer):
     def run(self):
         self.pre_run_configuration()
 
+        admin_mesasage_queue_name = f"{self.settings.agency_admin_messages_queue}-{self.name}"
+
         # Declare the queue for receiving admin messages
         self.channel.queue_declare(
-            queue=self.settings.agency_admin_messages_queue,
+            queue=admin_mesasage_queue_name,
             durable=True,
             auto_delete=True,
         )
@@ -23,20 +25,20 @@ class Agency(Consumer):
         # Bind the queue to the appropriate routing keys
         self.channel.queue_bind(
             exchange=self.settings.topic_exchange,
-            queue=self.settings.agency_admin_messages_queue,
+            queue=admin_mesasage_queue_name,
             routing_key=AdminTopics.AGENCY.value,
         )
 
         self.channel.queue_bind(
             exchange=self.settings.topic_exchange,
-            queue=self.settings.agency_admin_messages_queue,
+            queue=admin_mesasage_queue_name,
             routing_key=AdminTopics.ALL.value,
         )
 
         admin_message_callback = get_admin_message_callback(self.logger)
 
         self.consume(
-            queue=self.settings.agency_admin_messages_queue,
+            queue=admin_mesasage_queue_name,
             on_message_callback=admin_message_callback,
         )
 
