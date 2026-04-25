@@ -23,6 +23,14 @@ def declare_queues(channel: BlockingChannel, queue_names: list[str]):
             auto_delete=True,
         )
 
+    # admin broadcast queue
+    settings = get_settings()
+    channel.queue_declare(
+        queue=settings.admin_bradcaset_queue,
+        durable=True,
+        auto_delete=True,
+    )
+
 def bind_queues(channel: BlockingChannel, exchange_name: str, queue_names: list[str]):
     for queue_name in queue_names:
         channel.queue_bind(

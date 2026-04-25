@@ -1,4 +1,5 @@
 from pika.adapters.blocking_connection import BlockingChannel, BlockingConnection
+from space_agency.shared.config import get_settings
 from space_agency.shared.rabbitmq import setup_infrastructure, get_rabbitmq_connection
 from space_agency.utils.utils import create_logger
 import logging
@@ -10,6 +11,7 @@ class Consumer:
         self.logger = create_logger(__name__, logging_level)
         self.connection: BlockingConnection | None = None
         self.channel: BlockingChannel | None = None
+        self.settings = get_settings()
 
     def consume(self, queue: str, on_message_callback):
         self.logger.debug(f"Consumer {self.name} is consuming from {queue}.")

@@ -21,8 +21,9 @@ class Settings(BaseSettings):
     # exchange names
     topic_exchange: str = "space-delivery"
 
-    # topic names
-    admin_messages_topic: str = "admin-messages"
+    # queue names
+    admin_bradcaset_queue: str = "admin-braodcast-queue"
+    admin_all_messages_queue: str = "admin-all-messages-queue"
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:

@@ -1,5 +1,4 @@
-from space_agency.shared.models import Services
-from space_agency.utils.utils import create_logger
+from space_agency.shared.models import AdminTopics, Services
 from space_agency.shared.consumer import Consumer
 import logging
 
@@ -16,6 +15,18 @@ class Carrier(Consumer):
 
         # Establish a connection to RabbitMQ
         self.pre_run_configuration()
+
+        self.channel.queue_bind(
+            exchange=self.settings.topic_exchange,
+            queue=self.settings.admin_bradcaset_queue,
+            routing_key=AdminTopics.CARRIER.value,
+        )
+
+        self.channel.queue_bind(
+            exchange=self.settings.topic_exchange,
+            queue=self.settings.admin_bradcaset_queue,
+            routing_key=AdminTopics.ALL.value,
+        )
 
         # Define a callback function to process incoming messages
         def callback(ch, method, properties, body):

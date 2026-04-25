@@ -22,3 +22,4 @@ package = true
 [project.scripts]
 carrier = "space_agency.carrier.app:app"
 agency = "space_agency.agency.app:app"
+admin = "space_agency.admin.app:app"
