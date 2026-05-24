@@ -7,3 +7,4 @@ middleware/
 *.md
 *.log
 tmp/
+*.zip
