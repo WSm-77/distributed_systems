@@ -10,8 +10,21 @@ services:
       - "${HEADNODEPORT}:${HEADNODEPORT}"
     env_file:
       - ../.env
-    command: bash -c "uv run ray start --head --dashboard-port=${DASHBOARDPORT} --port=${REDISPORT} --ray-client-server-port=${HEADNODEPORT} --dashboard-host=0.0.0.0 --redis-password=${REDISPASSWORD} --block"
+    environment:
+      - RAY_USE_MULTIPROCESSING_CPU_COUNT=1
+      - RAY_DISABLE_DOCKER_CPU_WARNING=1
+    command: >
+      bash -c "uv run ray start
+      --head
+      --num-cpus 1
+      --include-dashboard false
+      --block"
     shm_size: 2g
+    healthcheck:
+      test: ["CMD", "uv", "run", "ray", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     deploy:
       resources:
         limits:
@@ -26,10 +39,15 @@ services:
       dockerfile: ./deploy/Dockerfile
     image: ${RAY_IMAGE}
     depends_on:
-      - ray-head
-    env_file:
-      - ../.env
-    command: bash -c "uv run ray start --address=ray-head:${REDISPORT} --redis-password=${REDISPASSWORD} --num-cpus=${NUM_CPU_WORKER} --block"
+      ray-head:
+        condition: service_healthy
+    environment:
+      - RAY_GCS_RPC_TIMEOUT_MS=30000
+    command: >
+      bash -c "uv run ray start
+      --address=ray-head:6379
+      --num-cpus=${NUM_CPU_WORKER}
+      --block"
     shm_size: 2g
     deploy:
       mode: replicated
