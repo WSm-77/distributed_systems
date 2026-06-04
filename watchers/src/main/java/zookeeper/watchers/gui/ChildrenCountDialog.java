@@ -6,15 +6,6 @@ import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * A non-blocking, auto-dismissing dialog that shows the current
- * number of children of /a whenever that count changes.
- *
- * The dialog:
- *  - appears in the bottom-right corner of the screen
- *  - shows a large counter + child names
- *  - auto-closes after 4 seconds (or immediately on click)
- */
 public class ChildrenCountDialog {
 
     private static final Color COLOR_BG     = new Color(30, 32, 40);
@@ -24,7 +15,6 @@ public class ChildrenCountDialog {
     private static final Color COLOR_MUTED  = new Color(130, 137, 151);
     private static final Color COLOR_CHILD  = new Color(152, 195, 121);
 
-    /** Show the dialog. Safe to call from any thread. */
     public static void show(int count, List<String> children) {
         SwingUtilities.invokeLater(() -> buildAndShow(count, children));
     }
@@ -41,17 +31,14 @@ public class ChildrenCountDialog {
             new EmptyBorder(20, 28, 20, 28)
         ));
 
-        // ── Title ──────────────────────────────────────────────────────────
         JLabel titleLabel = new JLabel("Children of  /a", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
         titleLabel.setForeground(COLOR_MUTED);
 
-        // ── Big count ──────────────────────────────────────────────────────
         JLabel countLabel = new JLabel(String.valueOf(count), SwingConstants.CENTER);
         countLabel.setFont(new Font("Segoe UI", Font.BOLD, 72));
         countLabel.setForeground(COLOR_COUNT);
 
-        // ── Children names ────────────────────────────────────────────────
         String childText = children.isEmpty()
             ? "(no children)"
             : children.stream().map(c -> "  • " + c).collect(Collectors.joining("\n"));
@@ -62,7 +49,6 @@ public class ChildrenCountDialog {
         childArea.setFont(new Font("JetBrains Mono", Font.PLAIN, 12));
         childArea.setBorder(null);
 
-        // ── Hint ──────────────────────────────────────────────────────────
         JLabel hint = new JLabel("(click to dismiss)", SwingConstants.CENTER);
         hint.setFont(new Font("Segoe UI", Font.ITALIC, 10));
         hint.setForeground(COLOR_MUTED);
@@ -89,14 +75,12 @@ public class ChildrenCountDialog {
         window.add(root);
         window.pack();
 
-        // Position: bottom-right corner with 20 px margin
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         window.setLocation(
             screen.width  - window.getWidth()  - 20,
             screen.height - window.getHeight() - 50
         );
 
-        // Click-to-close
         root.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -106,7 +90,6 @@ public class ChildrenCountDialog {
 
         window.setVisible(true);
 
-        // Auto-dismiss after 4 seconds
         Timer timer = new Timer(4_000, e -> window.dispose());
         timer.setRepeats(false);
         timer.start();

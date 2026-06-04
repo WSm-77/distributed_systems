@@ -2,9 +2,6 @@ package zookeeper.watchers.watcher;
 
 import java.util.List;
 
-/**
- * Immutable snapshot of a single ZooKeeper node used for tree display.
- */
 public class TreeNode {
 
     private final String         path;
@@ -17,11 +14,18 @@ public class TreeNode {
         this.children = children != null ? List.copyOf(children) : List.of();
     }
 
-    public String getPath()              { return path; }
-    public String getData()              { return data; }
-    public List<TreeNode> getChildren()  { return children; }
+    public String getPath() {
+        return path;
+    }
 
-    /** Returns just the znode name (last path segment). */
+    public String getData() {
+        return data;
+    }
+
+    public List<TreeNode> getChildren() {
+        return children;
+    }
+
     public String getName() {
         int idx = path.lastIndexOf('/');
         return idx >= 0 ? path.substring(idx + 1) : path;

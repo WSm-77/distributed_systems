@@ -8,16 +8,6 @@ import java.awt.*;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-/**
- * Always-visible control panel.
- *
- * Shows:
- *  - connection info
- *  - current status (/a exists / not exists, external app state)
- *  - "Show Tree" button
- *  - "Refresh Status" button
- *  - scrollable event log
- */
 public class MainControlPanel {
 
     private static final Color COLOR_BG        = new Color(30, 32, 40);
@@ -47,10 +37,6 @@ public class MainControlPanel {
         this.watcher = watcher;
     }
 
-    // -------------------------------------------------------------------------
-    // Build & show
-    // -------------------------------------------------------------------------
-
     public void show() {
         SwingUtilities.invokeLater(() -> {
             frame = new JFrame("ZooKeeper Watcher");
@@ -69,10 +55,6 @@ public class MainControlPanel {
             appendLog("Application started. Watching /a on " + watcher.getConnectString());
         });
     }
-
-    // -------------------------------------------------------------------------
-    // Header
-    // -------------------------------------------------------------------------
 
     private JPanel buildHeader() {
         JPanel panel = new JPanel(new BorderLayout());
@@ -96,10 +78,6 @@ public class MainControlPanel {
         return panel;
     }
 
-    // -------------------------------------------------------------------------
-    // Center
-    // -------------------------------------------------------------------------
-
     private JPanel buildCenter() {
         JPanel panel = new JPanel(new BorderLayout(0, 0));
         panel.setBackground(COLOR_BG);
@@ -115,13 +93,11 @@ public class MainControlPanel {
         panel.setBackground(COLOR_BG);
         panel.setBorder(new EmptyBorder(16, 20, 12, 20));
 
-        // Node status card
         statusNodeLabel = new JLabel("⬜  /a  UNKNOWN", SwingConstants.CENTER);
         statusNodeLabel.setFont(FONT_LABEL_BOLD);
         statusNodeLabel.setForeground(COLOR_MUTED);
         panel.add(buildCard("ZNode Status", statusNodeLabel));
 
-        // External app card
         statusAppLabel = new JLabel("⬜  Not running", SwingConstants.CENTER);
         statusAppLabel.setFont(FONT_LABEL_BOLD);
         statusAppLabel.setForeground(COLOR_MUTED);
@@ -173,10 +149,6 @@ public class MainControlPanel {
         return panel;
     }
 
-    // -------------------------------------------------------------------------
-    // Footer / buttons
-    // -------------------------------------------------------------------------
-
     private JPanel buildFooter() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 12));
         panel.setBackground(COLOR_HEADER);
@@ -205,7 +177,6 @@ public class MainControlPanel {
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.addActionListener(listener);
 
-        // Hover effect
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override public void mouseEntered(java.awt.event.MouseEvent e) {
                 btn.setBackground(color);
@@ -217,10 +188,6 @@ public class MainControlPanel {
         return btn;
     }
 
-    // -------------------------------------------------------------------------
-    // Button actions
-    // -------------------------------------------------------------------------
-
     private void onShowTree() {
         appendLog("User requested tree view of /a");
         watcher.showTreeView();
@@ -231,10 +198,6 @@ public class MainControlPanel {
         watcher.checkNodeExists();
         updateNodeStatus(watcher.isExternalAppRunning());
     }
-
-    // -------------------------------------------------------------------------
-    // Public update methods (called from ZNodeWatcher on the event thread)
-    // -------------------------------------------------------------------------
 
     public void setNodeExists(boolean exists) {
         SwingUtilities.invokeLater(() -> {
@@ -265,7 +228,7 @@ public class MainControlPanel {
             String ts   = LocalTime.now().format(TIME_FMT);
             String line = "[" + ts + "] " + message + "\n";
             logArea.append(line);
-            // Auto-scroll to bottom
+
             logArea.setCaretPosition(logArea.getDocument().getLength());
         });
     }
