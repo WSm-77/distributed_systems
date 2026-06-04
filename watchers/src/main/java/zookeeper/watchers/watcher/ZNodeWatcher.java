@@ -113,6 +113,12 @@ public class ZNodeWatcher implements Watcher {
     }
 
     private void handleStateChange(Event.KeeperState state) {
+        try {
+            controlPanel.onRefresh();
+        } catch (Exception e) {
+            System.err.println("[UI] Error refreshing UI on state change: " + e.getMessage());
+        }
+
         switch (state) {
             case SyncConnected:
                 System.out.println("[ZK] SyncConnected");
@@ -149,15 +155,14 @@ public class ZNodeWatcher implements Watcher {
 
     public void checkNodeExists() {
         try {
-            Stat stat = zk.exists(WATCHED_NODE, this);
-            if (stat != null) {
+            if (this.isNodeAExists()) {
                 System.out.println("[ZK] /a already exists - registering children watch");
                 watchDescendantsOf(WATCHED_NODE);
                 watchNodeData();
             } else {
                 System.out.println("[ZK] /a does not exist - waiting for NodeCreated");
             }
-        } catch (KeeperException | InterruptedException e) {
+        } catch (Exception e) {
             System.err.println("[ZK] Error in checkNodeExists: " + e.getMessage());
         }
     }
@@ -301,6 +306,15 @@ public class ZNodeWatcher implements Watcher {
 
     public boolean isExternalAppRunning() {
         return externalProcess != null && externalProcess.isAlive();
+    }
+
+    public boolean isNodeAExists() {
+        try {
+            return zk.exists(WATCHED_NODE, this) != null;
+        } catch (KeeperException | InterruptedException e) {
+            System.err.println("[Node] Error checking node existence: " + e.getMessage());
+            return false;
+        }
     }
 
     public String getConnectString() {

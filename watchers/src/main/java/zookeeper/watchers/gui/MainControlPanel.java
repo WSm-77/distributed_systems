@@ -193,10 +193,11 @@ public class MainControlPanel {
         watcher.showTreeView();
     }
 
-    private void onRefresh() {
+    public void onRefresh() {
         appendLog("Manual status refresh");
         watcher.checkNodeExists();
         updateNodeStatus(watcher.isExternalAppRunning());
+        setNodeExists(watcher.isNodeAExists());
     }
 
     public void setNodeExists(boolean exists) {
