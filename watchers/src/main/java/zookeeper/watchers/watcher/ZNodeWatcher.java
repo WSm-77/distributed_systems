@@ -152,7 +152,6 @@ public class ZNodeWatcher implements Watcher {
             Stat stat = zk.exists(WATCHED_NODE, this);
             if (stat != null) {
                 System.out.println("[ZK] /a already exists - registering children watch");
-                launchExternalApp();
                 watchDescendantsOf(WATCHED_NODE);
                 watchNodeData();
             } else {
@@ -206,7 +205,7 @@ public class ZNodeWatcher implements Watcher {
             List<String> allDescendants = new ArrayList<>();
             collectDescendants(WATCHED_NODE, allDescendants);
             int count = allDescendants.size();
-            System.out.println("[Event] Descendants of /a changed – count=" + count + " " + allDescendants);
+            System.out.println("[Event] Descendants of /a changed - count=" + count + " " + allDescendants);
             ChildrenCountDialog.show(count, allDescendants);
 
             zk.exists(WATCHED_NODE, this);
