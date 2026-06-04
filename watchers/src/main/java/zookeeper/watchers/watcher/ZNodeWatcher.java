@@ -92,13 +92,14 @@ public class ZNodeWatcher implements Watcher {
                 if (WATCHED_NODE.equals(path)) {
                     onNodeADeleted();
                 } else if (path != null && path.startsWith(WATCHED_NODE + "/")) {
-                    watchChildrenOfA();
+                    watchDescendantsOf(path);
                 }
                 break;
 
             case NodeChildrenChanged:
-                if (WATCHED_NODE.equals(path)) {
-                    onChildrenChanged();
+                System.out.println("[Watch] Children changed for path: " + path);
+                if (path != null && (WATCHED_NODE.equals(path) || path.startsWith(WATCHED_NODE + "/"))) {
+                    onChildrenChanged(path);
                 }
                 break;
 
@@ -148,9 +149,11 @@ public class ZNodeWatcher implements Watcher {
 
     public void checkNodeExists() {
         try {
+            Stat stat = zk.exists(WATCHED_NODE, this);
             if (stat != null) {
                 System.out.println("[ZK] /a already exists - registering children watch");
-                watchChildrenOfA();
+                launchExternalApp();
+                watchDescendantsOf(WATCHED_NODE);
                 watchNodeData();
             } else {
                 System.out.println("[ZK] /a does not exist - waiting for NodeCreated");
@@ -160,14 +163,16 @@ public class ZNodeWatcher implements Watcher {
         }
     }
 
-    private void watchChildrenOfA() {
+    private void watchDescendantsOf(String path) {
         try {
-            List<String> children = zk.getChildren(WATCHED_NODE, this);
-            System.out.println("[ZK] Children of /a (currently " + children.size() + "): " + children);
+            List<String> children = zk.getChildren(path, this);
+            for (String child : children) {
+                watchDescendantsOf(path + "/" + child);
+            }
         } catch (KeeperException.NoNodeException e) {
-            System.out.println("[ZK] /a no longer exists - skipping children watch");
+
         } catch (KeeperException | InterruptedException e) {
-            System.err.println("[ZK] Error watching children: " + e.getMessage());
+            System.err.println("[ZK] Error watching descendants of " + path + ": " + e.getMessage());
         }
     }
 
@@ -183,7 +188,7 @@ public class ZNodeWatcher implements Watcher {
     private void onNodeACreated() {
         System.out.println("[Event] /a CREATED - launching external app");
         launchExternalApp();
-        watchChildrenOfA();
+        watchDescendantsOf(WATCHED_NODE);
         watchNodeData();
         checkNodeExists();
     }
@@ -194,17 +199,36 @@ public class ZNodeWatcher implements Watcher {
         checkNodeExists();
     }
 
-    private void onChildrenChanged() {
+    private void onChildrenChanged(String path) {
         try {
-            List<String> children = zk.getChildren(WATCHED_NODE, this);
-            int count = children.size();
-            System.out.println("[Event] Children of /a changed - count=" + count + " " + children);
-            ChildrenCountDialog.show(count, children);
+            watchDescendantsOf(path);
+
+            List<String> allDescendants = new ArrayList<>();
+            collectDescendants(WATCHED_NODE, allDescendants);
+            int count = allDescendants.size();
+            System.out.println("[Event] Descendants of /a changed – count=" + count + " " + allDescendants);
+            ChildrenCountDialog.show(count, allDescendants);
+
             zk.exists(WATCHED_NODE, this);
         } catch (KeeperException.NoNodeException e) {
-            System.out.println("[ZK] /a deleted while processing children change");
+            System.out.println("[ZK] Node deleted while processing children change: " + path);
         } catch (KeeperException | InterruptedException e) {
             System.err.println("[ZK] Error in onChildrenChanged: " + e.getMessage());
+        }
+    }
+
+    private void collectDescendants(String path, List<String> result)
+            throws KeeperException, InterruptedException {
+        List<String> children;
+        try {
+            children = zk.getChildren(path, false);
+        } catch (KeeperException.NoNodeException e) {
+            return;
+        }
+        for (String child : children) {
+            String childPath = path + "/" + child;
+            result.add(childPath);
+            collectDescendants(childPath, result);
         }
     }
 
