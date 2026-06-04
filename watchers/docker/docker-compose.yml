@@ -1,0 +1,72 @@
+services:
+  zoo1:
+    image: zookeeper:3.8.4
+    container_name: zoo1
+    hostname: zoo1
+    restart: unless-stopped
+    ports:
+      - "2181:2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: >
+        server.1=zoo1:2888:3888;2181
+        server.2=zoo2:2888:3888;2181
+        server.3=zoo3:2888:3888;2181
+      ZOO_4LW_COMMANDS_WHITELIST: "mntr,conf,ruok,stat,srvr"
+    volumes:
+      - zoo1_data:/data
+      - zoo1_log:/datalog
+    networks:
+      - zknet
+
+  zoo2:
+    image: zookeeper:3.8.4
+    container_name: zoo2
+    hostname: zoo2
+    restart: unless-stopped
+    ports:
+      - "2182:2181"
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: >
+        server.1=zoo1:2888:3888;2181
+        server.2=zoo2:2888:3888;2181
+        server.3=zoo3:2888:3888;2181
+      ZOO_4LW_COMMANDS_WHITELIST: "mntr,conf,ruok,stat,srvr"
+    volumes:
+      - zoo2_data:/data
+      - zoo2_log:/datalog
+    networks:
+      - zknet
+
+  zoo3:
+    image: zookeeper:3.8.4
+    container_name: zoo3
+    hostname: zoo3
+    restart: unless-stopped
+    ports:
+      - "2183:2181"
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: >
+        server.1=zoo1:2888:3888;2181
+        server.2=zoo2:2888:3888;2181
+        server.3=zoo3:2888:3888;2181
+      ZOO_4LW_COMMANDS_WHITELIST: "mntr,conf,ruok,stat,srvr"
+    volumes:
+      - zoo3_data:/data
+      - zoo3_log:/datalog
+    networks:
+      - zknet
+
+volumes:
+  zoo1_data:
+  zoo1_log:
+  zoo2_data:
+  zoo2_log:
+  zoo3_data:
+  zoo3_log:
+
+networks:
+  zknet:
+    driver: bridge
